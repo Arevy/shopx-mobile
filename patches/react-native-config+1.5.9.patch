@@ -1,0 +1,53 @@
+diff --git a/node_modules/react-native-config/src/NativeRNCConfig.ts b/node_modules/react-native-config/src/NativeRNCConfig.ts
+index 09baa71..e1043ef 100644
+--- a/node_modules/react-native-config/src/NativeRNCConfig.ts
++++ b/node_modules/react-native-config/src/NativeRNCConfig.ts
+@@ -1,5 +1,5 @@
+ import type { TurboModule } from 'react-native';
+-import { TurboModuleRegistry } from 'react-native';
++import { NativeModules, TurboModuleRegistry } from 'react-native';
+ 
+ export interface Spec extends TurboModule {
+   // Synchronous getters (supported on Windows TurboModules)
+@@ -9,4 +9,6 @@ export interface Spec extends TurboModule {
+   compositionInfo?(): string;
+ }
+ 
+-export default TurboModuleRegistry.getEnforcing<Spec>('RNCConfigModule');
++const turboModule = TurboModuleRegistry.get<Spec>('RNCConfigModule');
++
++export default turboModule ?? (NativeModules.RNCConfigModule as Spec);
+diff --git a/node_modules/react-native-config/package.json b/node_modules/react-native-config/package.json
+index 0bd98be..cfe956b 100644
+--- a/node_modules/react-native-config/package.json
++++ b/node_modules/react-native-config/package.json
+@@ -42,7 +42,7 @@
+     "@types/jest": "^29.5.12"
+   },
+   "dependencies": {
+-  "@babel/core": "^7.25.2",
++    "@babel/core": "^7.25.2",
+     "@babel/preset-env": "^7.25.0",
+     "@babel/preset-react": "^7.24.7",
+     "babel-jest": "^29.7.0"
+@@ -53,20 +53,6 @@
+   "peerDependenciesMeta": {
+     "react-native-windows": {
+       "optional": true
+-    }
+-  },
+-  "codegenConfig": {
+-    "name": "RNCConfigModule",
+-    "type": "modules",
+-    "jsSrcsDir": "./src",
+-    "android": {
+-      "javaPackageName": "com.luggit.reactnativeconfig"
+-    },
+-    "ios": {
+-      "prefix": "RNC"
+-    },
+-    "windows": {
+-      "cppNamespace": "RNCConfig"
+     }
+   }
+ }
