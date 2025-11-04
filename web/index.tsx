@@ -1,8 +1,8 @@
 import './polyfills';
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
-import FeatherFont from '../assets/fonts/Feather.ttf';
-import MaterialCommunityIconsFont from '../assets/fonts/MaterialCommunityIcons.ttf';
+import FeatherFont from 'react-native-vector-icons/Fonts/Feather.ttf';
+import MaterialCommunityIconsFont from 'react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf';
 import {AppRegistry} from 'react-native';
 import App from '../src/app/App';
 import appConfig from '../app.json';

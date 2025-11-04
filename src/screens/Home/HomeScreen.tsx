@@ -19,6 +19,7 @@ import {
 import {useAppSelector} from '@/store/hooks';
 import {useDebouncedValue} from '@/hooks/useDebouncedValue';
 import type {HomeStackNavigation, HomeStackParamList} from '@/navigation/types';
+import type {Product} from '@/types/product';
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeStackNavigation>();
@@ -26,7 +27,16 @@ export const HomeScreen: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const debouncedSearch = useDebouncedValue(searchTerm, 400);
-  const wishlistItems = useAppSelector(state => state.wishlist.items);
+  const wishlistItems = useAppSelector(state => {
+    const candidate = state.wishlist?.items;
+    if (Array.isArray(candidate)) {
+      return candidate;
+    }
+    if (candidate && typeof candidate === 'object') {
+      return Object.values(candidate as Record<string, Product>);
+    }
+    return [];
+  });
   const session = useAppSelector(state => state.session);
   const [activeProductMutation, setActiveProductMutation] = useState<
     string | null

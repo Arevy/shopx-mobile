@@ -24,7 +24,7 @@ export interface Payment {
   id: string
   orderId: string
   amount: number
-  provider: string
+  method: string
   status: string
   createdAt?: string
   updatedAt?: string

@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo} from 'react';
-import {Alert, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
@@ -21,9 +21,11 @@ import {HomeScreen} from '@/screens/Home/HomeScreen';
 import {ProductDetailScreen} from '@/screens/ProductDetail/ProductDetailScreen';
 import {SettingsScreen} from '@/screens/Settings/SettingsScreen';
 import {WishlistScreen} from '@/screens/Wishlist/WishlistScreen';
+import {CheckoutScreen} from '@/screens/Checkout/CheckoutScreen';
 import type {
   CmsStackParamList,
   HomeStackParamList,
+  CartStackParamList,
   MainTabParamList,
   RootDrawerParamList,
 } from '@/navigation/types';
@@ -38,6 +40,7 @@ import {
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const CmsStack = createNativeStackNavigator<CmsStackParamList>();
+const CartStack = createNativeStackNavigator<CartStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Drawer = createDrawerNavigator<RootDrawerParamList>();
 
@@ -57,6 +60,17 @@ const CmsStackNavigator: React.FC = () => (
     <CmsStack.Screen name="CmsList" component={CmsListScreen} />
     <CmsStack.Screen name="CmsDetail" component={CmsDetailScreen} />
   </CmsStack.Navigator>
+);
+
+const CartStackNavigator: React.FC = () => (
+  <CartStack.Navigator screenOptions={{headerShown: false}}>
+    <CartStack.Screen name="CartHome" component={CartScreen} />
+    <CartStack.Screen
+      name="Checkout"
+      component={CheckoutScreen}
+      options={{headerShown: false, presentation: 'modal'}}
+    />
+  </CartStack.Navigator>
 );
 
 const MainTabsNavigator: React.FC = () => {
@@ -97,7 +111,7 @@ const MainTabsNavigator: React.FC = () => {
       />
       <Tab.Screen
         name="Cart"
-        component={CartScreen}
+        component={CartStackNavigator}
         options={{title: t('tabs.cart')}}
       />
       <Tab.Screen
@@ -170,16 +184,14 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
         />
         <List.Item
           title={t('navigation.drawer.checkout')}
-          description={t('cart.alerts.checkoutNotImplementedTitle')}
+          description={t('cart.actions.checkout')}
           left={iconProps => <List.Icon {...iconProps} icon="credit-card" />}
           onPress={() => {
+            navigation.navigate('HomeTabs', {
+              screen: 'Cart',
+              params: {screen: 'Checkout'},
+            });
             navigation.closeDrawer();
-            setTimeout(() => {
-              Alert.alert(
-                t('cart.alerts.checkoutNotImplementedTitle'),
-                t('cart.alerts.checkoutNotImplementedMessage'),
-              );
-            }, 250);
           }}
         />
         <List.Item

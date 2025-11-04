@@ -8,6 +8,11 @@ export type HomeStackParamList = {
   ProductDetail: {productId: string};
 };
 
+export type CartStackParamList = {
+  CartHome: undefined;
+  Checkout: undefined;
+};
+
 export type CmsStackParamList = {
   CmsList: undefined;
   CmsDetail: {slug: string; title?: string};
@@ -15,7 +20,7 @@ export type CmsStackParamList = {
 
 export type MainTabParamList = {
   HomeStack: NavigatorScreenParams<HomeStackParamList>;
-  Cart: undefined;
+  Cart: NavigatorScreenParams<CartStackParamList>;
   Wishlist: undefined;
   Account: undefined;
 };
@@ -28,6 +33,10 @@ export type RootDrawerParamList = {
 
 export type HomeStackNavigation = NativeStackNavigationProp<
   HomeStackParamList
+>;
+
+export type CartStackNavigation = NativeStackNavigationProp<
+  CartStackParamList
 >;
 
 export type CmsStackNavigation = NativeStackNavigationProp<CmsStackParamList>;

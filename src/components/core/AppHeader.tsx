@@ -41,7 +41,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({navigation}) => {
       <IconButton
         icon="magnify"
         size={24}
-        onPress={() => navigation.navigate('HomeTabs', {screen: 'HomeStack'})}
+        onPress={() =>
+          navigation.navigate('HomeTabs', {
+            screen: 'HomeStack',
+            params: {screen: 'Home'},
+          })
+        }
         accessibilityLabel={t('inputs.search')}
         iconColor={theme.colors.onSurface}
       />

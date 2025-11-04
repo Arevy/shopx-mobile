@@ -39,8 +39,7 @@ src/
    cp .env.example .env
    # update GRAPHQL_ENDPOINT, IMAGE_CDN_URL, SITE_NAME, etc.
    ```
-   For Android emulators, keep the host as `localhost` and run `adb reverse tcp:4000 tcp:4000` (and any extra ports) to reach locally running services.
-   - `USE_GRAPHQL_MOCKS=1` enables the curated offline dataset when the GraphQL API is not available. Leave it unset (default) to talk to the real backend.
+   For Android emulators, keep the host as `localhost` and run `adb reverse tcp:4000 tcp:4000` (and any extra ports) to reach locally running services. The mobile builds no longer ship with mock GraphQL data, so keep the ShopX backend reachable while developing.
 3. **iOS prerequisites**
    ```bash
    cd ios
@@ -111,8 +110,7 @@ src/
 - Hermes is enabled by default. Toggle it per platform (`android/gradle.properties` and `ios/Podfile`) if you need JSC for debugging native modules.
 - Android emulators and USB devices need Metro (`8081`) bridged back to your host; run `adb reverse tcp:8081 tcp:8081` after every reboot (adjust the port if you customise `METRO_SERVER_PORT`).
 - If you're hitting a locally running backend (default `GRAPHQL_ENDPOINT=http://localhost:4000/graphql`), mirror that port too: `adb reverse tcp:4000 tcp:4000` plus any other services you expose. Confirm with `adb reverse --list`; on macOS 15+ you may need to prepend `sudo` the first time so the adb daemon can bind the smartsocket.
-- Feather + MaterialCommunity icon fonts are bundled under `assets/fonts` and pre-linked for iOS, Android, web, and desktop. If you ever add new icon sets, drop the `.ttf` into that folder, mirror it to `android/app/src/main/assets/fonts` and `ios/Fonts`, then run `npx react-native-asset` to refresh pointers.
+- Feather + MaterialCommunity icon fonts ship directly from `react-native-vector-icons`; CocoaPods/Gradle handle copying them for mobile and the web build injects them from the module (`web/index.tsx`), so no manual font linking is required.
 - The web/dev desktop shell proxies `/graphql` (and `/api/serverSideServices`) to the `GRAPHQL_ENDPOINT` host. Keep the backend reachable from Node (default `http://localhost:4000`) or update `.env`; no additional CORS changes are required.
 - To clear caches between runs, use `npm start -- --reset-cache` and wipe `watchman`, `$TMPDIR/metro-*`, and platform-specific build folders (`./gradlew clean`, `xcodebuild clean`).
 - The desktop shell enforces context isolation, denies `window.open`, and opens external URLs in the system browser to keep the renderer sandboxed.
-- Enable `USE_GRAPHQL_MOCKS=1` in your `.env` while the backend is offline; the app will serve the bundled demo catalogue, CMS pages, cart, and wishlist data across all platforms.

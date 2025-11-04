@@ -5,7 +5,7 @@ import type {Order} from '@/types/order';
 import type {Payment} from '@/types/order';
 import type {Category, Product, Review} from '@/types/product';
 import type {UserContext} from '@/types/userContext';
-import type {AuthPayload} from '@/types/user';
+import type {AuthPayload, User} from '@/types/user';
 
 export type GetProductsQuery = {
   getProducts: Product[];
@@ -93,7 +93,7 @@ export type RemoveFromWishlistVariables = {
 };
 
 export type RegisterMutation = {
-  register: AuthPayload;
+  register: User;
 };
 
 export type RegisterVariables = {
@@ -136,11 +136,12 @@ export type CreateOrderMutation = {
 };
 
 export type CreateOrderVariables = {
-  input: {
-    paymentId: string;
-    addressId: string;
-    cartId: string;
-  };
+  userId: string;
+  products: Array<{
+    productId: string;
+    quantity: number;
+    price: number;
+  }>;
 };
 
 export type AddAddressMutation = {
@@ -148,7 +149,11 @@ export type AddAddressMutation = {
 };
 
 export type AddAddressVariables = {
-  input: Omit<Address, 'id'>;
+  userId: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
 };
 
 export type GetAddressesQuery = {
@@ -164,11 +169,41 @@ export type CreatePaymentMutation = {
 };
 
 export type CreatePaymentVariables = {
-  input: {
-    orderId: string;
-    amount: number;
-    provider: string;
+  orderId: string;
+  amount: number;
+  method: string;
+};
+
+export type GetOrdersQuery = {
+  getOrders: Order[];
+};
+
+export type GetOrdersVariables = {
+  userId: string;
+};
+
+export type UpdateUserProfileMutation = {
+  updateUserProfile: {
+    user: User;
+    message?: string | null;
   };
+};
+
+export type UpdateUserProfileVariables = {
+  input: {
+    name?: string | null;
+    email?: string;
+    currentPassword: string;
+  };
+};
+
+export type ChangeUserPasswordMutation = {
+  changeUserPassword: boolean;
+};
+
+export type ChangeUserPasswordVariables = {
+  currentPassword: string;
+  newPassword: string;
 };
 
 export type GetCmsPageQuery = {

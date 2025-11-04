@@ -11,13 +11,20 @@ import {
   useClearCartMutation,
   useGetCartQuery,
   useRemoveFromCartMutation,
+  useAddToCartMutation,
 } from '@/services/graphql/shopxGraphqlApi';
 import {useAppSelector} from '@/store/hooks';
-import type {MainTabNavigation} from '@/navigation/types';
+import type {
+  CartStackNavigation,
+  MainTabNavigation,
+  RootDrawerNavigation,
+} from '@/navigation/types';
 import {formatCurrency} from '@/utils/currency';
 
 export const CartScreen: React.FC = () => {
-  const navigation = useNavigation<MainTabNavigation>();
+  const navigation = useNavigation<CartStackNavigation>();
+  const tabNavigation = navigation.getParent<MainTabNavigation>();
+  const drawerNavigation = tabNavigation?.getParent<RootDrawerNavigation>();
   const session = useAppSelector(state => state.session);
   const cart = useAppSelector(state => state.cart);
   const {t} = useAppTranslation(['cart', 'common']);
@@ -28,6 +35,7 @@ export const CartScreen: React.FC = () => {
     {skip: !shouldFetch},
   );
 
+  const [addToCart] = useAddToCartMutation();
   const [removeFromCart] = useRemoveFromCartMutation();
   const [clearCart] = useClearCartMutation();
 
@@ -47,13 +55,24 @@ export const CartScreen: React.FC = () => {
         </Text>
         <Button
           mode="contained"
-          onPress={() => navigation.navigate('Account')}
+          onPress={() =>
+            drawerNavigation?.navigate('HomeTabs', {screen: 'Account'})
+          }
           icon="log-in">
           {t('common.actions.login')}
         </Button>
         <Button
           mode="outlined"
-          onPress={() => navigation.navigate('HomeStack', {screen: 'Home'})}>
+          onPress={() => {
+            if (drawerNavigation) {
+              drawerNavigation.navigate('HomeTabs', {
+                screen: 'HomeStack',
+                params: {screen: 'Home'},
+              });
+            } else {
+              tabNavigation?.navigate('HomeStack', {screen: 'Home'});
+            }
+          }}>
           {t('cart.actions.goShopping')}
         </Button>
       </Screen>
@@ -100,6 +119,48 @@ export const CartScreen: React.FC = () => {
     }
   };
 
+  const handleIncrease = async (productId: string) => {
+    try {
+      await addToCart({
+        userId: session.user!.id,
+        productId,
+        quantity: 1,
+      }).unwrap();
+    } catch (mutationError) {
+      Alert.alert(
+        t('common.errors.genericTitle'),
+        t(
+          'cart.errors.add',
+          'Unable to update the product quantity. Please try again.',
+        ),
+      );
+      console.warn('increase quantity failed', mutationError);
+    }
+  };
+
+  const handleDecrease = async (productId: string, quantity: number) => {
+    if (quantity <= 1) {
+      await handleRemove(productId);
+      return;
+    }
+    try {
+      await addToCart({
+        userId: session.user!.id,
+        productId,
+        quantity: -1,
+      }).unwrap();
+    } catch (mutationError) {
+      Alert.alert(
+        t('common.errors.genericTitle'),
+        t(
+          'cart.errors.update',
+          'Unable to update the product quantity. Please try again.',
+        ),
+      );
+      console.warn('decrease quantity failed', mutationError);
+    }
+  };
+
   return (
     <Screen>
       <FlatList
@@ -118,9 +179,19 @@ export const CartScreen: React.FC = () => {
           <View style={styles.item}>
             <View style={styles.itemInfo}>
               <Text variant="titleMedium">{item.product.name}</Text>
-              <Text variant="bodyMedium" style={styles.muted}>
-                {t('cart.labels.quantity', {value: item.quantity})}
-              </Text>
+              <View style={styles.quantityControls}>
+                <IconButton
+                  icon="minus"
+                  mode="contained-tonal"
+                  onPress={() => handleDecrease(item.product.id, item.quantity)}
+                />
+                <Text variant="titleMedium">{item.quantity}</Text>
+                <IconButton
+                  icon="plus"
+                  mode="contained-tonal"
+                  onPress={() => handleIncrease(item.product.id)}
+                />
+              </View>
               <Text variant="bodyMedium" style={styles.price}>
                 {formatCurrency(item.product.price * item.quantity)}
               </Text>
@@ -130,7 +201,7 @@ export const CartScreen: React.FC = () => {
                 icon="eye"
                 mode="contained-tonal"
                 onPress={() =>
-                  navigation.navigate('HomeStack', {
+                  tabNavigation?.navigate('HomeStack', {
                     screen: 'ProductDetail',
                     params: {productId: item.product.id},
                   })
@@ -152,7 +223,16 @@ export const CartScreen: React.FC = () => {
             </Text>
             <Button
               mode="contained"
-              onPress={() => navigation.navigate('HomeStack', {screen: 'Home'})}>
+              onPress={() => {
+                if (drawerNavigation) {
+                  drawerNavigation.navigate('HomeTabs', {
+                    screen: 'HomeStack',
+                    params: {screen: 'Home'},
+                  });
+                } else {
+                  tabNavigation?.navigate('HomeStack', {screen: 'Home'});
+                }
+              }}>
               {t('common.actions.viewProducts')}
             </Button>
           </View>
@@ -166,12 +246,7 @@ export const CartScreen: React.FC = () => {
               </View>
               <Button
                 mode="contained"
-                onPress={() =>
-                  Alert.alert(
-                    t('cart.alerts.checkoutNotImplementedTitle'),
-                    t('cart.alerts.checkoutNotImplementedMessage'),
-                  )
-                }>
+                onPress={() => navigation.navigate('Checkout')}>
                 {t('cart.actions.checkout')}
               </Button>
               <Button mode="text" onPress={handleClear}>
@@ -207,6 +282,11 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     flex: 1,
+    gap: 4,
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   itemActions: {

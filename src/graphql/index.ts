@@ -16,6 +16,8 @@ export { LOGIN } from './user/Login'
 export { LOGOUT } from './user/Logout'
 export { REDEEM_IMPERSONATION } from './user/RedeemImpersonation'
 export { GET_USER_CONTEXT } from './user/GetUserContext'
+export { UPDATE_USER_PROFILE } from './user/UpdateProfile'
+export { CHANGE_USER_PASSWORD } from './user/ChangePassword'
 
 export { CREATE_ORDER } from './checkout/CreateOrder'
 export { ADD_ADDRESS } from './checkout/AddAddress'
@@ -24,3 +26,4 @@ export { CREATE_PAYMENT } from './checkout/CreatePayment'
 
 export { GET_CMS_PAGE } from './cms/GetCmsPage'
 export { GET_CMS_PAGES } from './cms/GetCmsPages'
+export { GET_ORDERS } from './orders/GetOrders'

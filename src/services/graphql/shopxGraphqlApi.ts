@@ -13,6 +13,7 @@ import {
   GET_CATEGORIES,
   GET_CMS_PAGE,
   GET_CMS_PAGES,
+  GET_ORDERS,
   GET_PRODUCT_DETAIL,
   GET_PRODUCTS,
   GET_USER_CONTEXT,
@@ -23,20 +24,10 @@ import {
   REGISTER,
   REMOVE_FROM_CART,
   REMOVE_FROM_WISHLIST,
+  UPDATE_USER_PROFILE,
+  CHANGE_USER_PASSWORD,
 } from '@/graphql';
 import {env} from '@/config/env';
-import {
-  cloneAddresses,
-  cloneCategories,
-  cloneCmsPages,
-  cloneProducts,
-  cloneReviews,
-  createCart,
-  createUserContext,
-  createWishlist,
-  findCmsPage,
-  findProduct,
-} from '@/services/graphql/mockData';
 import type {RootState} from '@/store';
 import type {
   AddAddressMutation,
@@ -63,6 +54,8 @@ import type {
   GetProductDetailVariables,
   GetProductsQuery,
   GetProductsVariables,
+  GetOrdersQuery,
+  GetOrdersVariables,
   GetUserContextQuery,
   GetUserContextVariables,
   GetWishlistQuery,
@@ -78,10 +71,15 @@ import type {
   RemoveFromCartVariables,
   RemoveFromWishlistMutation,
   RemoveFromWishlistVariables,
+  UpdateUserProfileMutation,
+  UpdateUserProfileVariables,
+  ChangeUserPasswordMutation,
+  ChangeUserPasswordVariables,
 } from '@/services/graphql/types';
 import {setCart, clearCart} from '@/store/slices/cartSlice';
 import {setSession, clearSession, updateUser} from '@/store/slices/sessionSlice';
 import {setWishlist, clearWishlist} from '@/store/slices/wishlistSlice';
+import {setOrders, clearOrders} from '@/store/slices/ordersSlice';
 
 const graphqlBaseQuery = graphqlRequestBaseQuery({
   url: env.GRAPHQL_ENDPOINT,
@@ -97,210 +95,9 @@ const graphqlBaseQuery = graphqlRequestBaseQuery({
   },
 });
 
-type GraphqlBaseQueryFn = typeof graphqlBaseQuery;
-type GraphqlBaseQueryArgs = Parameters<GraphqlBaseQueryFn>[0];
-
-const OPERATION_NAME_REGEX = /\b(query|mutation)\s+([A-Za-z0-9_]+)/;
-
-const extractOperationName = (document: unknown): string | null => {
-  if (typeof document === 'string') {
-    const match = document.match(OPERATION_NAME_REGEX);
-    return match?.[2] ?? null;
-  }
-  if (
-    document &&
-    typeof document === 'object' &&
-    'definitions' in document &&
-    Array.isArray((document as {definitions?: unknown[]}).definitions)
-  ) {
-    const definitions = (document as {
-      definitions?: Array<{name?: {value?: string}}>;
-    }).definitions;
-    for (const definition of definitions ?? []) {
-      const nameValue = definition?.name?.value;
-      if (typeof nameValue === 'string') {
-        return nameValue;
-      }
-    }
-  }
-  return null;
-};
-
-const getOperationNameFromArgs = (
-  args: GraphqlBaseQueryArgs,
-): string | null => {
-  if (!args || typeof args !== 'object') {
-    return null;
-  }
-  const document = (args as {document?: unknown}).document;
-  return document ? extractOperationName(document) : null;
-};
-
-const getVariables = (args: GraphqlBaseQueryArgs): Record<string, unknown> => {
-  if (!args || typeof args !== 'object') {
-    return {};
-  }
-  const variables = (args as {variables?: Record<string, unknown>}).variables;
-  return variables ?? {};
-};
-
-const mockOperationHandlers: Record<
-  string,
-  (args: GraphqlBaseQueryArgs) => unknown
-> = {
-  GetProducts: args => {
-    const variables = getVariables(args) as Partial<GetProductsVariables>;
-    const source = cloneProducts();
-    let filtered = source;
-
-    if (variables?.categoryId) {
-      filtered = filtered.filter(
-        product => product.categoryId === variables.categoryId,
-      );
-    }
-
-    if (variables?.name && variables.name.trim().length > 0) {
-      const normalized = variables.name.trim().toLowerCase();
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(normalized),
-      );
-    }
-
-    const offset = variables?.offset ?? 0;
-    const limit =
-      typeof variables?.limit === 'number' && variables.limit > 0
-        ? variables.limit
-        : filtered.length;
-    const paged = filtered.slice(offset, offset + limit);
-
-    return {
-      getProducts: paged,
-    };
-  },
-  GetProductDetail: args => {
-    const variables = getVariables(args) as Partial<GetProductDetailVariables>;
-    const productId = variables?.id ?? null;
-    return {
-      product: findProduct(productId),
-      reviews: cloneReviews().filter(
-        review => review.productId === productId,
-      ),
-    };
-  },
-  GetCategories: () => ({
-    getCategories: cloneCategories(),
-  }),
-  GetCmsPages: () => ({
-    getCmsPages: cloneCmsPages(),
-  }),
-  GetCmsPage: args => {
-    const variables = getVariables(args) as Partial<GetCmsPageVariables>;
-    return {
-      getCmsPage: findCmsPage(variables?.slug ?? null),
-    };
-  },
-  GetCart: args => {
-    const variables = getVariables(args) as Partial<GetCartVariables>;
-    return {
-      getCart: createCart(variables?.userId),
-    };
-  },
-  GetWishlist: () => ({
-    getWishlist: createWishlist(),
-  }),
-  GetUserContext: args => {
-    const variables = getVariables(args) as Partial<GetUserContextVariables>;
-    return {
-      getUserContext: createUserContext(variables?.userId),
-    };
-  },
-  GetAddresses: () => ({
-    getAddresses: cloneAddresses(),
-  }),
-};
-
-const notifiedMockOperations = new Set<string>();
-
-const baseQueryWithMockFallback: GraphqlBaseQueryFn = async (
-  args,
-  api,
-  extraOptions,
-) => {
-  const operationNameFromArgs = getOperationNameFromArgs(args);
-  let result: Awaited<ReturnType<GraphqlBaseQueryFn>>;
-
-  try {
-    result = await graphqlBaseQuery(args, api, extraOptions);
-  } catch (caughtError) {
-    if (!env.USE_GRAPHQL_MOCKS) {
-      throw caughtError;
-    }
-
-    if (__DEV__) {
-      console.warn(
-        '[shopxGraphqlApi] Network exception encountered',
-        caughtError,
-      );
-    }
-
-    if (!operationNameFromArgs) {
-      throw caughtError;
-    }
-
-    const handler = mockOperationHandlers[operationNameFromArgs];
-    if (!handler) {
-      throw caughtError;
-    }
-
-    if (!notifiedMockOperations.has(operationNameFromArgs)) {
-      console.warn(
-        `[shopxGraphqlApi] Falling back to mock data for ${operationNameFromArgs} because the GraphQL service is unavailable.`,
-      );
-      notifiedMockOperations.add(operationNameFromArgs);
-    }
-
-    const data = handler(args);
-    return {data};
-  }
-
-  if (env.USE_GRAPHQL_MOCKS && result.error) {
-    console.warn('[shopxGraphqlApi] Network error encountered', result.error);
-  }
-  if (!env.USE_GRAPHQL_MOCKS || !result.error) {
-    return result;
-  }
-
-  if (!operationNameFromArgs) {
-    return result;
-  }
-
-  const handler = mockOperationHandlers[operationNameFromArgs];
-  if (!handler) {
-    return result;
-  }
-
-  if (!notifiedMockOperations.has(operationNameFromArgs)) {
-    console.warn(
-      `[shopxGraphqlApi] Falling back to mock data for ${operationNameFromArgs} because the GraphQL service is unavailable.`,
-    );
-    notifiedMockOperations.add(operationNameFromArgs);
-  }
-
-  try {
-    const data = handler(args);
-    return {data};
-  } catch (mockError) {
-    console.warn(
-      `[shopxGraphqlApi] Mock handler for ${operationNameFromArgs} failed.`,
-      mockError,
-    );
-    return result;
-  }
-};
-
 export const shopxGraphqlApi = createApi({
   reducerPath: 'shopxGraphqlApi',
-  baseQuery: baseQueryWithMockFallback,
+  baseQuery: graphqlBaseQuery,
   tagTypes: [
     'Product',
     'Category',
@@ -438,14 +235,6 @@ export const shopxGraphqlApi = createApi({
       }),
       invalidatesTags: [{type: 'Session', id: 'CURRENT'}],
       transformResponse: (response: RegisterMutation) => response.register,
-      async onQueryStarted(_arg, {dispatch, queryFulfilled}) {
-        try {
-          const {data} = await queryFulfilled;
-          dispatch(setSession(data));
-        } catch (error) {
-          console.warn('register mutation failed', error);
-        }
-      },
     }),
     login: builder.mutation<LoginMutation['login'], LoginVariables>({
       query: variables => ({
@@ -484,6 +273,7 @@ export const shopxGraphqlApi = createApi({
           dispatch(clearSession());
           dispatch(clearCart());
           dispatch(clearWishlist());
+          dispatch(clearOrders());
         }
       },
     }),
@@ -531,6 +321,55 @@ export const shopxGraphqlApi = createApi({
           console.warn('Failed to hydrate user context', error);
         }
       },
+    }),
+    getOrders: builder.query<GetOrdersQuery['getOrders'], GetOrdersVariables>({
+      query: variables => ({
+        document: GET_ORDERS,
+        variables,
+      }),
+      providesTags: [{type: 'Order', id: 'LIST'}],
+      transformResponse: (response: GetOrdersQuery) => response.getOrders,
+      async onQueryStarted(_arg, {dispatch, queryFulfilled}) {
+        try {
+          const {data} = await queryFulfilled;
+          dispatch(setOrders(data));
+        } catch (error) {
+          console.warn('Failed to hydrate orders', error);
+        }
+      },
+    }),
+    updateUserProfile: builder.mutation<
+      UpdateUserProfileMutation['updateUserProfile'],
+      UpdateUserProfileVariables
+    >({
+      query: variables => ({
+        document: UPDATE_USER_PROFILE,
+        variables,
+      }),
+      invalidatesTags: [{type: 'Session', id: 'CURRENT'}],
+      transformResponse: (response: UpdateUserProfileMutation) =>
+        response.updateUserProfile,
+      async onQueryStarted(_arg, {dispatch, queryFulfilled}) {
+        try {
+          const {data} = await queryFulfilled;
+          if (data?.user) {
+            dispatch(updateUser(data.user));
+          }
+        } catch (error) {
+          console.warn('updateUserProfile failed', error);
+        }
+      },
+    }),
+    changeUserPassword: builder.mutation<
+      ChangeUserPasswordMutation['changeUserPassword'],
+      ChangeUserPasswordVariables
+    >({
+      query: variables => ({
+        document: CHANGE_USER_PASSWORD,
+        variables,
+      }),
+      transformResponse: (response: ChangeUserPasswordMutation) =>
+        response.changeUserPassword,
     }),
     createOrder: builder.mutation<
       CreateOrderMutation['createOrder'],
@@ -622,6 +461,9 @@ export const {
   useLogoutMutation,
   useRedeemImpersonationMutation,
   useGetUserContextQuery,
+  useGetOrdersQuery,
+  useUpdateUserProfileMutation,
+  useChangeUserPasswordMutation,
   useCreateOrderMutation,
   useAddAddressMutation,
   useGetAddressesQuery,

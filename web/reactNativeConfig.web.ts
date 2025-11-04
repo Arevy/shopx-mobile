@@ -12,7 +12,6 @@ const Config = {
     process.env.SERVER_SERVICES_BASE_PATH ?? DEFAULT_SERVER_SERVICES_BASE_PATH,
   USE_SERVER_SERVICES: process.env.USE_SERVER_SERVICES,
   SERVER_SERVICES_TOKEN: process.env.SERVER_SERVICES_TOKEN,
-  USE_GRAPHQL_MOCKS: process.env.USE_GRAPHQL_MOCKS,
 } as const;
 
 if (process.env.NODE_ENV !== 'production') {

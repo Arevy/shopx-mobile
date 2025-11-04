@@ -16,6 +16,7 @@ import {cartReducer} from '@/store/slices/cartSlice';
 import {sessionReducer} from '@/store/slices/sessionSlice';
 import {uiReducer} from '@/store/slices/uiSlice';
 import {wishlistReducer} from '@/store/slices/wishlistSlice';
+import {ordersReducer} from '@/store/slices/ordersSlice';
 
 const sessionPersistConfig = {
   key: 'session',
@@ -43,6 +44,7 @@ const rootReducer = combineReducers({
   cart: persistReducer(cartPersistConfig, cartReducer),
   wishlist: persistReducer(wishlistPersistConfig, wishlistReducer),
   ui: persistReducer(uiPersistConfig, uiReducer),
+  orders: ordersReducer,
   [shopxGraphqlApi.reducerPath]: shopxGraphqlApi.reducer,
 });
 
