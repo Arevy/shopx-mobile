@@ -10,22 +10,23 @@ import {useAppTranslation} from '@/hooks/useAppTranslation';
 
 type AppHeaderProps = Pick<DrawerHeaderProps, 'navigation'>;
 
+const buildHeaderStyle = (topInset: number, surfaceColor: string) => ({
+  paddingTop: topInset + 8,
+  paddingBottom: 8,
+  backgroundColor: surfaceColor,
+});
+
 export const AppHeader: React.FC<AppHeaderProps> = ({navigation}) => {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const {t} = useAppTranslation('common');
+  const headerStyle = React.useMemo(
+    () => buildHeaderStyle(insets.top, theme.colors.surface),
+    [insets.top, theme.colors.surface],
+  );
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top + 8,
-          paddingBottom: 8,
-          backgroundColor: theme.colors.surface,
-        },
-      ]}
-    >
+    <View style={[styles.container, headerStyle]}>
       <IconButton
         icon="menu"
         size={24}

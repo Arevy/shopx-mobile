@@ -240,7 +240,6 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     flex: 1,
-    top: -60,
   },
   header: {
     width: '100%',

@@ -165,13 +165,13 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
         <List.Item
           title={t('navigation.drawer.cart')}
           description={t('common.actions.viewCart')}
-          left={props => <List.Icon {...props} icon="shopping-cart" />}
+          left={iconProps => <List.Icon {...iconProps} icon="shopping-cart" />}
           onPress={() => handleNavigateToTab('Cart')}
         />
         <List.Item
           title={t('navigation.drawer.checkout')}
           description={t('cart.alerts.checkoutNotImplementedTitle')}
-          left={props => <List.Icon {...props} icon="credit-card" />}
+          left={iconProps => <List.Icon {...iconProps} icon="credit-card" />}
           onPress={() => {
             navigation.closeDrawer();
             setTimeout(() => {
@@ -185,7 +185,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
         <List.Item
           title={t('navigation.drawer.wishlist')}
           description={t('common.actions.viewWishlist')}
-          left={props => <List.Icon {...props} icon="heart" />}
+          left={iconProps => <List.Icon {...iconProps} icon="heart" />}
           onPress={() => handleNavigateToTab('Wishlist')}
         />
       </List.Section>
@@ -201,14 +201,14 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
       <List.Section title={t('navigation.drawer.categories')}>
         <List.Item
           title={t('home.categoriesAll')}
-          left={props => <List.Icon {...props} icon="grid" />}
+          left={iconProps => <List.Icon {...iconProps} icon="grid" />}
           onPress={() => handleCategoryPress(undefined)}
         />
         {categories.map(category => (
           <List.Item
             key={category.id}
             title={category.name}
-            left={props => <List.Icon {...props} icon="tag" />}
+            left={iconProps => <List.Icon {...iconProps} icon="tag" />}
             onPress={() => handleCategoryPress(category.id)}
           />
         ))}
@@ -226,7 +226,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
           <List.Item
             key={page.slug}
             title={page.title}
-            left={props => <List.Icon {...props} icon="file-text" />}
+            left={iconProps => <List.Icon {...iconProps} icon="file-text" />}
             onPress={() => handleCmsPress(page.slug, page.title)}
           />
         ))}

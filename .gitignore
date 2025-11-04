@@ -52,6 +52,10 @@ yarn-error.log
 # Metro / bundle output
 *.jsbundle
 .metro-health-check*
+web/dist/
+dist-desktop/
+desktop/resources/*
+!desktop/resources/.gitkeep
 
 # Ruby / CocoaPods
 **/Pods/

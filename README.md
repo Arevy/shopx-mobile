@@ -1,93 +1,79 @@
 # ShopX Mobile
 
-ShopX Mobile is the native companion to the ShopX web experience. It is built with **React Native 0.82 (React 19)**, runs on the new Fabric/TurboModules architecture out of the box, and consumes the same GraphQL API exposed by the backend via Redux Toolkit + RTK Query. The codebase is 100 % TypeScript.
+ShopX Mobile delivers the ShopX commerce experience on iOS, Android, the browser, and desktop. The app runs on **React Native 0.82 / React 19**, ships with the new Fabric + TurboModules architecture, and consumes the ShopX GraphQL API through Redux Toolkit Query. All code is written in TypeScript.
 
-## Tech stack at a glance
-- React Native 0.82.1 · React 19.1 · Hermes (switchable to JSC per platform).
-- Redux Toolkit, RTK Query and `redux-persist` (AsyncStorage) for state/cache.
-- React Navigation 7 (stack + bottom tabs + drawer) and React Native Paper 5.14 for UI.
-- i18next with the shared `Common/Page_*` locale bundles (EN, RO, FR, DE, AR, HE) plus mobile copy.
-- Native modules: AsyncStorage, react-native-config, react-native-device-info, gesture-handler, reanimated, safe-area-context, screens, vector-icons.
+## Supported platforms
+- **iOS / Android** · native builds via Xcode and Gradle (Hermes enabled by default).
+- **Web** · single-page bundle powered by React Native Web + webpack (port 8082 by default).
+- **Desktop** · hardened Electron shell that wraps the web bundle with context isolation and no Node integration in the renderer.
+
+## Tech stack quick view
+- State & data: Redux Toolkit, RTK Query, redux-persist (AsyncStorage).
+- UI: React Navigation 7 (stack, bottom tabs, drawer) + React Native Paper 5.
+- Native modules: AsyncStorage, react-native-config, device-info, gesture-handler, reanimated, safe-area-context, screens, vector-icons.
+- Internationalisation: i18next with the shared ShopX locale packs.
 
 ## Project layout
 ```
 src/
-  app/          # app bootstrap & providers (Redux, Paper, Navigation, persist)
-  components/   # shared UI (core/product)
-  config/       # environment schema (Zod + react-native-config)
-  graphql/      # shared queries/mutations + normalisers used across clients
-  hooks/        # theme, auth bootstrap, debounced helpers, i18n bridge
-  i18n/         # config + locale resources
-  navigation/   # navigators & typed params
-  screens/      # feature screens (Home, Cart, Wishlist, Account, CMS, Settings…)
-  services/     # RTK Query API client
-  store/        # Redux Toolkit slices/persist setup
-  theme/        # MD3 theme definitions
-  utils/        # helpers (currency, images, etc.)
+  app/        bootstrap & global providers
+  components/ shared UI primitives & feature widgets
+  config/     runtime configuration schema (Zod + env bridge)
+  hooks/      reusable hooks (theme, bootstrap, debounced helpers)
+  i18n/       i18next setup and locale catalogues
+  navigation/ navigators, typed params, drawer/bottom tab wiring
+  screens/    feature screens (Home, Cart, Wishlist, Account, CMS, Settings)
+  services/   RTK Query API client
+  store/      Redux slices, persistence wiring
+  theme/      Material Design 3 theme tokens
+  utils/      formatting helpers, image resolvers, etc.
 ```
 
-## Prerequisites
-- Node.js ≥ 20 (nvm recommended).
-- JDK 17–20 (Temurin on macOS works well).
-- Android Studio Koala (2024.1.1) or newer with SDK + platform-tools in `PATH`.
-- Xcode 15+, Ruby 3.1 + CocoaPods ≥ 1.15 for iOS.
-- Watchman (macOS) for fast reloads.
-- `npx react-native doctor` should report only adb issues when no device is attached.
-
-## Quick start
+## Getting started
 1. **Install dependencies**
    ```bash
    npm install
    ```
-2. **Environment**
+2. **Environment variables**
    ```bash
    cp .env.example .env
-   # update GRAPHQL_ENDPOINT, IMAGE_CDN_URL, SITE_NAME, optional Redis settings
+   # update GRAPHQL_ENDPOINT, IMAGE_CDN_URL, SITE_NAME, etc.
    ```
-   For Android emulators, `10.0.2.2` points to the host (`adb reverse tcp:4000 tcp:4000` is handy for local services).
-3. **iOS**
+   For Android emulators, keep the host as `localhost` and run `adb reverse tcp:4000 tcp:4000` (and any extra ports) to reach locally running services.
+   - `USE_GRAPHQL_MOCKS=1` enables the curated offline dataset when the GraphQL API is not available. Leave it unset (default) to talk to the real backend.
+3. **iOS prerequisites**
    ```bash
    cd ios
    bundle install
    RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
    cd ..
-   npm run ios
-   ```
-4. **Android**
-   ```bash
-   npm run android
-   ```
-   The Gradle wrapper targets 8.13. If you drive the build from the terminal, ensure `JAVA_HOME` points to JDK 17 and `ANDROID_HOME` exposes `platform-tools` & `emulator`.
-5. **Metro bundler (if you need it standalone)**
-   ```bash
-   npm start
    ```
 
-## Useful scripts
-| Script | Purpose |
+## Running the app
+| Command | Description |
 | --- | --- |
-| `npm run ios` / `npm run android` | Build & launch on the selected platform |
-| `npm start` | Start Metro bundler |
-| `npm run lint` / `npm run lint:fix` | ESLint checks & autofix |
-| `npm run typecheck` | TypeScript `--noEmit` |
-| `npm run prettier` / `npm run prettier:fix` | Formatting check / write |
-| `npm test` | Currently stubbed while Jest support is updated for React 19 |
+| `npm run ios` | Build and launch on the selected iOS simulator / device. |
+| `npm run android` | Build and launch on the active Android emulator / device. |
+| `npm start` | Standalone Metro bundler (auto-starts with platform commands). |
+| `npm run web` | Start the web dev server on `http://localhost:8082` (override with `WEB_PORT`). |
+| `npm run desktop` | Run the Electron shell against the web dev server. |
 
-## Notes
-- Hermes is enabled on both platforms by default. Flip `hermesEnabled=false` in `android/gradle.properties` or `:hermes_enabled => false` in `ios/Podfile` if you need JSC.
-- The codebase already contains mocks/config for Jest (`jest.config.js`, `jest.setup.ts`), ready to re-enable once React 19-compatible testing libraries are in place.
-- When running on the Android emulator against a local backend, either use `10.0.2.2` in `.env` or keep `localhost` and run `adb reverse` for the relevant ports.
+## Live reload & developer shortcuts
+- **iOS Simulator** · Press `⌘ + R` to reload JS, `⌘ + ⇧ + K` in Xcode to clean builds, or hit `i` in the Metro terminal to boot the last-used simulator.
+- **Android Emulator** · Tap `R` twice to reload, `⌘ + M` / `Ctrl + M` to open the dev menu, or hit `a` in the Metro terminal to launch the default emulator.
+- **Physical devices** · Shake the device (or run `adb shell input keyevent 82` on Android) to surface the dev menu, then choose *Reload*. Keep Metro running via `npm start`.
+- **Web & Desktop** · Webpack dev server supports HMR; reload with `⌘ + R` in the browser, Electron reloads automatically when the web bundle recompiles.
 
-## Build & release tips
-- **Android release**
+## Building for production
+- **Android**
   ```bash
   cd android
-  ./gradlew bundleRelease   # generates AAB in android/app/build/outputs/bundle/release
-  ./gradlew assembleRelease # generates APK in android/app/build/outputs/apk/release
+  ./gradlew bundleRelease   # Google Play AAB
+  ./gradlew assembleRelease # stand-alone APK
   ```
-  Configure a signing config inside `android/app/build.gradle` (replace the debug keystore) and set your `gradle.properties` secrets before uploading to the Play Console.
+  Configure your keystore + signing config before distributing.
 
-- **iOS release**
+- **iOS**
   ```bash
   cd ios
   xcodebuild -workspace shopxMobile.xcworkspace \
@@ -95,21 +81,34 @@ src/
              -configuration Release \
              -sdk iphoneos \
              -archivePath build/shopxMobile.xcarchive archive
-
   xcodebuild -exportArchive \
              -archivePath build/shopxMobile.xcarchive \
              -exportOptionsPlist ExportOptions.plist \
              -exportPath build/Release
   ```
-  For App Store builds, manage signing in Xcode or through `fastlane gym`. Make sure the Release scheme has Hermes enabled/disabled as desired, and that the `ExportOptions.plist` matches your provisioning settings.
 
-- **Cleaning between releases**
+- **Web**
   ```bash
-  cd android && ./gradlew clean && cd ..
-  cd ios && xcodebuild -workspace shopxMobile.xcworkspace \
-            -scheme shopxMobile \
-            -configuration Release \
-            clean && cd ..
-  watchman watch-del-all && rm -rf $TMPDIR/metro-* && rm -rf $TMPDIR/react-*
+  npm run web:build
   ```
-  Clear Metro caches (`npm start -- --reset-cache`) if you see stale bundles during CI builds.
+  Bundles are emitted to `web/dist`. Deploy the contents behind HTTPS and configure the same GraphQL endpoint the mobile app uses.
+
+- **Desktop**
+  ```bash
+  npm run desktop:build
+  ```
+  The packaged apps land in `dist-desktop/`. Supply platform icons under `desktop/resources` before notarising/signing.
+
+## Additional scripts
+| Command | Description |
+| --- | --- |
+| `npm run lint` / `npm run lint:fix` | ESLint checks with optional autofix. |
+| `npm run typecheck` | TypeScript validation (`--noEmit`). |
+| `npm run prettier` / `npm run prettier:fix` | Format verification / write. |
+| `npm test` | Currently stubbed while Jest support is updated for React 19. |
+
+## Platform tips
+- Hermes is enabled by default. Toggle it per platform (`android/gradle.properties` and `ios/Podfile`) if you need JSC for debugging native modules.
+- To clear caches between runs, use `npm start -- --reset-cache` and wipe `watchman`, `$TMPDIR/metro-*`, and platform-specific build folders (`./gradlew clean`, `xcodebuild clean`).
+- The desktop shell enforces context isolation, denies `window.open`, and opens external URLs in the system browser to keep the renderer sandboxed.
+- Enable `USE_GRAPHQL_MOCKS=1` in your `.env` while the backend is offline; the app will serve the bundled demo catalogue, CMS pages, cart, and wishlist data across all platforms.

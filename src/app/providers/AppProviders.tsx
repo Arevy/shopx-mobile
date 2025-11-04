@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {StyleSheet} from 'react-native';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Provider} from 'react-redux';
@@ -61,7 +61,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({children}) => {
       <SafeAreaProvider>
         <Provider store={store}>
           <PersistGate
-            loading={null}
+            loading={<PersistGateFallback />}
             persistor={persistor}
             onBeforeLift={() => {
               store.dispatch(setHydrated(true));
@@ -74,8 +74,19 @@ export const AppProviders: React.FC<AppProvidersProps> = ({children}) => {
   );
 };
 
+const PersistGateFallback: React.FC = () => (
+  <View style={styles.fallback}>
+    <ActivityIndicator size="large" />
+  </View>
+);
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  fallback: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -5,6 +5,7 @@
       "@/*": ["./src/*"]
     },
     "types": ["jest", "node"],
+    "lib": ["es2022", "dom", "dom.iterable"],
     "noImplicitAny": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
@@ -12,6 +13,6 @@
     "ignoreDeprecations": "5.0",
     "moduleResolution": "bundler"
   },
-  "include": ["src", "index.js", "metro.config.js", "jest.config.js", "jest.setup.ts"],
+  "include": ["src", "index.js", "metro.config.js", "jest.config.js", "jest.setup.ts", "web"],
   "exclude": ["node_modules"]
 }

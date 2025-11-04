@@ -112,8 +112,5 @@ DEPENDENCIES
   cocoapods (>= 1.13, != 1.15.1, != 1.15.0)
   xcodeproj (< 1.26.0)
 
-RUBY VERSION
-   ruby 3.1.2p20
-
 BUNDLED WITH
    2.6.9

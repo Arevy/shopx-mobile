@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": [
+      "node",
+      "webpack-env"
+    ]
+  },
+  "include": [
+    "../src",
+    "./**/*.ts",
+    "./**/*.tsx"
+  ]
+}

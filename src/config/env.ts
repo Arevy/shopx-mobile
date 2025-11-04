@@ -26,6 +26,7 @@ const envSchema = z.object({
   SERVER_SERVICES_BASE_PATH: z.string().min(1),
   USE_SERVER_SERVICES: z.boolean().default(false),
   SERVER_SERVICES_TOKEN: z.string().optional(),
+  USE_GRAPHQL_MOCKS: z.boolean().default(false),
 });
 
 const rawConfig = {
@@ -36,13 +37,12 @@ const rawConfig = {
     Config.SERVER_SERVICES_BASE_PATH ?? DEFAULT_SERVER_SERVICES_BASE_PATH,
   USE_SERVER_SERVICES: parseBoolean(Config.USE_SERVER_SERVICES),
   SERVER_SERVICES_TOKEN: Config.SERVER_SERVICES_TOKEN,
+  USE_GRAPHQL_MOCKS: parseBoolean(Config.USE_GRAPHQL_MOCKS),
 };
 
 const parsed = envSchema.parse(rawConfig);
 
-const buildServerServicesGraphqlEndpoint = (
-  config: typeof parsed,
-): string => {
+const buildServerServicesGraphqlEndpoint = (config: typeof parsed): string => {
   const baseUrl = new URL(config.GRAPHQL_ENDPOINT);
   const cleanedBasePath = config.SERVER_SERVICES_BASE_PATH.replace(/\/+$/, '');
   return `${baseUrl.origin}${cleanedBasePath}/graphql`;
@@ -57,3 +57,12 @@ export const env = {
   ORIGINAL_GRAPHQL_ENDPOINT: parsed.GRAPHQL_ENDPOINT,
   GRAPHQL_ENDPOINT: graphqlEndpoint,
 };
+
+if (typeof __DEV__ !== 'undefined' && __DEV__) {
+  // eslint-disable-next-line no-console
+  console.log('[shopx-env]', {
+    GRAPHQL_ENDPOINT: env.GRAPHQL_ENDPOINT,
+    USE_GRAPHQL_MOCKS: env.USE_GRAPHQL_MOCKS,
+    USE_SERVER_SERVICES: env.USE_SERVER_SERVICES,
+  });
+}
