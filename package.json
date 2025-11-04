@@ -10,7 +10,7 @@
     "web": "webpack serve --config web/webpack.config.js --mode development",
     "web:build": "webpack --config web/webpack.config.js --mode production",
     "desktop": "npm run desktop:dev",
-    "desktop:dev": "concurrently --kill-others --names \"web,desktop\" \"npm run web\" \"node scripts/start-desktop-dev.js\"",
+    "desktop:dev": "concurrently --kill-others --names \"web,desktop\" \"npm run web -- --env desktop\" \"node scripts/start-desktop-dev.js\"",
     "desktop:build": "npm run web:build && electron-builder",
     "lint": "eslint --max-warnings=0 .",
     "lint:fix": "eslint --max-warnings=0 . --fix",

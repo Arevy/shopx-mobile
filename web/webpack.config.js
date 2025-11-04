@@ -20,8 +20,65 @@ const modulesToTranspile = [
   '@react-native',
 ].map(moduleName => path.resolve(appDirectory, 'node_modules', moduleName));
 
-module.exports = (_env = {}, argv = {}) => {
+const ensureLeadingSlash = value => {
+  if (!value) {
+    return '/';
+  }
+  return value.startsWith('/') ? value : `/${value}`;
+};
+
+const parseHostInput = input => {
+  const fallback = {hostname: 'localhost', protocol: 'http', port: undefined};
+  if (!input) {
+    return fallback;
+  }
+  try {
+    const candidate =
+      input.startsWith('http://') || input.startsWith('https://')
+        ? new URL(input)
+        : new URL(`http://${input}`);
+    return {
+      hostname: candidate.hostname || fallback.hostname,
+      protocol: candidate.protocol
+        ? candidate.protocol.replace(/:$/, '')
+        : fallback.protocol,
+      port: candidate.port ? Number(candidate.port) : undefined,
+    };
+  } catch {
+    if (input.includes(':')) {
+      const [host, portCandidate] = input.split(':');
+      const parsedPort = Number(portCandidate);
+      if (!Number.isNaN(parsedPort)) {
+        return {hostname: host, protocol: fallback.protocol, port: parsedPort};
+      }
+    }
+    return {hostname: input, protocol: fallback.protocol, port: undefined};
+  }
+};
+
+const parsePort = value => {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const coerceUrl = value => {
+  if (!value) {
+    return null;
+  }
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+};
+
+module.exports = (env = {}, argv = {}) => {
   const isProduction = argv.mode === 'production';
+  const desktopFlag = env.desktop;
+  const isDesktop = desktopFlag === true || desktopFlag === 'true';
 
   const envFilePath = path.resolve(process.cwd(), '.env');
   const envFromFile = fs.existsSync(envFilePath)
@@ -46,6 +103,76 @@ module.exports = (_env = {}, argv = {}) => {
       __DEV__: JSON.stringify(!isProduction),
     },
   );
+
+  const hostMeta = parseHostInput(rawEnv.WEB_HOST);
+  const envPort = parsePort(rawEnv.WEB_PORT);
+  const devServerPort =
+    envPort ?? hostMeta.port ?? (isDesktop ? 8082 : 8083);
+  const devServerHost = hostMeta.hostname;
+  const devServerProtocol = (rawEnv.WEB_PROTOCOL || hostMeta.protocol || 'http')
+    .toString()
+    .replace(/:$/, '');
+  const clientHostForEnv = ['0.0.0.0', '::', '::1'].includes(devServerHost)
+    ? 'localhost'
+    : devServerHost;
+  const devServerOrigin = `${devServerProtocol}://${clientHostForEnv}`;
+
+  const graphqlTargetUrl =
+    coerceUrl(rawEnv.GRAPHQL_ENDPOINT) ||
+    new URL('http://localhost:4000/graphql');
+  const graphqlTargetOrigin = `${graphqlTargetUrl.protocol}//${graphqlTargetUrl.host}`;
+  const inferredGraphqlPath =
+    graphqlTargetUrl.pathname && graphqlTargetUrl.pathname !== '/'
+      ? graphqlTargetUrl.pathname
+      : '/graphql';
+  const graphqlProxyPath = ensureLeadingSlash(
+    rawEnv.WEB_GRAPHQL_PROXY_PATH || inferredGraphqlPath,
+  );
+  const devGraphqlEndpoint = `${devServerOrigin}:${devServerPort}${graphqlProxyPath}`;
+
+  if (!isProduction) {
+    definedEnv['process.env.GRAPHQL_ENDPOINT'] =
+      JSON.stringify(devGraphqlEndpoint);
+    definedEnv['process.env.WEB_GRAPHQL_TARGET'] = JSON.stringify(
+      graphqlTargetUrl.toString(),
+    );
+  } else if (!definedEnv['process.env.GRAPHQL_ENDPOINT']) {
+    definedEnv['process.env.GRAPHQL_ENDPOINT'] = JSON.stringify(
+      graphqlTargetUrl.toString(),
+    );
+  }
+
+  const serverServicesPath = ensureLeadingSlash(
+    rawEnv.SERVER_SERVICES_BASE_PATH || '/api/serverSideServices',
+  );
+
+  const proxyConfig = {
+    [graphqlProxyPath]: {
+      target: graphqlTargetOrigin,
+      changeOrigin: true,
+      secure: false,
+      ...(graphqlProxyPath !== inferredGraphqlPath
+        ? {
+            pathRewrite: {
+              [`^${graphqlProxyPath}`]: inferredGraphqlPath,
+            },
+          }
+        : {}),
+    },
+  };
+
+  if (serverServicesPath !== graphqlProxyPath) {
+    proxyConfig[serverServicesPath] = {
+      target: graphqlTargetOrigin,
+      changeOrigin: true,
+      secure: false,
+    };
+  }
+
+  const proxyEntries = Object.entries(proxyConfig).map(([context, config]) => ({
+    context,
+    ...config,
+  }));
 
   return {
     mode: isProduction ? 'production' : 'development',
@@ -206,11 +333,12 @@ module.exports = (_env = {}, argv = {}) => {
       static: {
         directory: path.resolve(__dirname, 'dist'),
       },
-      host: process.env.WEB_HOST || '127.0.0.1',
-      port: Number(process.env.WEB_PORT || 8082),
+      host: devServerHost,
+      port: devServerPort,
       historyApiFallback: true,
       hot: true,
       allowedHosts: 'all',
+      proxy: proxyEntries,
       client: {
         overlay: true,
       },

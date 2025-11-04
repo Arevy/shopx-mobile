@@ -7,6 +7,8 @@ import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {PaperProvider} from 'react-native-paper';
 import {I18nextProvider} from 'react-i18next';
+import FeatherIcon from 'react-native-vector-icons/Feather';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import {store, persistor} from '@/store';
 import {setHydrated} from '@/store/slices/sessionSlice';
@@ -24,6 +26,23 @@ const UserContextBootstrapper: React.FC = () => {
   useBootstrapUserContext();
   return null;
 };
+
+const logFontError =
+  (family: string) =>
+  (error: unknown): void => {
+    const inDev =
+      (typeof __DEV__ !== 'undefined' && __DEV__) ||
+      process.env.NODE_ENV !== 'production';
+    if (inDev) {
+      // eslint-disable-next-line no-console
+      console.warn(`[icons] Failed to load ${family} font`, error);
+    }
+  };
+
+FeatherIcon.loadFont().catch(logFontError('Feather'));
+MaterialCommunityIcons.loadFont().catch(
+  logFontError('MaterialCommunityIcons'),
+);
 
 const LocalizationBootstrapper: React.FC = () => {
   const language = useAppSelector(state => state.ui.language);

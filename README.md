@@ -4,8 +4,8 @@ ShopX Mobile delivers the ShopX commerce experience on iOS, Android, the browser
 
 ## Supported platforms
 - **iOS / Android** · native builds via Xcode and Gradle (Hermes enabled by default).
-- **Web** · single-page bundle powered by React Native Web + webpack (port 8082 by default).
-- **Desktop** · hardened Electron shell that wraps the web bundle with context isolation and no Node integration in the renderer.
+- **Web** · single-page bundle powered by React Native Web + webpack (port 8083 by default).
+- **Desktop** · hardened Electron shell that wraps the web bundle with context isolation and no Node integration in the renderer (targets port 8082 by default).
 
 ## Tech stack quick view
 - State & data: Redux Toolkit, RTK Query, redux-persist (AsyncStorage).
@@ -55,8 +55,8 @@ src/
 | `npm run ios` | Build and launch on the selected iOS simulator / device. |
 | `npm run android` | Build and launch on the active Android emulator / device. |
 | `npm start` | Standalone Metro bundler (auto-starts with platform commands). |
-| `npm run web` | Start the web dev server on `http://localhost:8082` (override with `WEB_PORT`). |
-| `npm run desktop` | Run the Electron shell against the web dev server. |
+| `npm run web` | Start the web dev server on `http://localhost:8083` (override with `WEB_PORT`). |
+| `npm run desktop` | Run the Electron shell against the web dev server (`http://localhost:8082` by default, overridable via `WEB_PORT`). |
 
 ## Live reload & developer shortcuts
 - **iOS Simulator** · Press `⌘ + R` to reload JS, `⌘ + ⇧ + K` in Xcode to clean builds, or hit `i` in the Metro terminal to boot the last-used simulator.
@@ -109,6 +109,10 @@ src/
 
 ## Platform tips
 - Hermes is enabled by default. Toggle it per platform (`android/gradle.properties` and `ios/Podfile`) if you need JSC for debugging native modules.
+- Android emulators and USB devices need Metro (`8081`) bridged back to your host; run `adb reverse tcp:8081 tcp:8081` after every reboot (adjust the port if you customise `METRO_SERVER_PORT`).
+- If you're hitting a locally running backend (default `GRAPHQL_ENDPOINT=http://localhost:4000/graphql`), mirror that port too: `adb reverse tcp:4000 tcp:4000` plus any other services you expose. Confirm with `adb reverse --list`; on macOS 15+ you may need to prepend `sudo` the first time so the adb daemon can bind the smartsocket.
+- Feather + MaterialCommunity icon fonts are bundled under `assets/fonts` and pre-linked for iOS, Android, web, and desktop. If you ever add new icon sets, drop the `.ttf` into that folder, mirror it to `android/app/src/main/assets/fonts` and `ios/Fonts`, then run `npx react-native-asset` to refresh pointers.
+- The web/dev desktop shell proxies `/graphql` (and `/api/serverSideServices`) to the `GRAPHQL_ENDPOINT` host. Keep the backend reachable from Node (default `http://localhost:4000`) or update `.env`; no additional CORS changes are required.
 - To clear caches between runs, use `npm start -- --reset-cache` and wipe `watchman`, `$TMPDIR/metro-*`, and platform-specific build folders (`./gradlew clean`, `xcodebuild clean`).
 - The desktop shell enforces context isolation, denies `window.open`, and opens external URLs in the system browser to keep the renderer sandboxed.
 - Enable `USE_GRAPHQL_MOCKS=1` in your `.env` while the backend is offline; the app will serve the bundled demo catalogue, CMS pages, cart, and wishlist data across all platforms.

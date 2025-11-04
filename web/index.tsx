@@ -1,6 +1,8 @@
 import './polyfills';
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import FeatherFont from '../assets/fonts/Feather.ttf';
+import MaterialCommunityIconsFont from '../assets/fonts/MaterialCommunityIcons.ttf';
 import {AppRegistry} from 'react-native';
 import App from '../src/app/App';
 import appConfig from '../app.json';
@@ -8,6 +10,29 @@ import {Platform} from 'react-native';
 
 if (typeof document !== 'undefined') {
   document.title = `ShopX (${Platform.OS})`;
+  const fontTagId = 'shopx-icon-fonts';
+  if (!document.getElementById(fontTagId)) {
+    const styleTag = document.createElement('style');
+    styleTag.id = fontTagId;
+    styleTag.type = 'text/css';
+    styleTag.appendChild(
+      document.createTextNode(`
+@font-face {
+  font-family: "Feather";
+  src: url(${FeatherFont}) format("truetype");
+  font-style: normal;
+  font-weight: normal;
+}
+@font-face {
+  font-family: "MaterialCommunityIcons";
+  src: url(${MaterialCommunityIconsFont}) format("truetype");
+  font-style: normal;
+  font-weight: normal;
+}
+`),
+    );
+    document.head.appendChild(styleTag);
+  }
 }
 
 const appName = appConfig.name;
@@ -29,9 +54,7 @@ if (hadPlaceholder) {
 
 const renderError = (error: unknown) => {
   const message =
-    error instanceof Error
-      ? `${error.name}: ${error.message}`
-      : String(error);
+    error instanceof Error ? `${error.name}: ${error.message}` : String(error);
   rootTag.innerHTML = `<pre style="white-space:pre-wrap;font-family:monospace;padding:16px;color:#b71c1c;">${message}</pre>`;
 };
 
