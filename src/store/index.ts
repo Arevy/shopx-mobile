@@ -19,41 +19,58 @@ import {uiReducer} from '@/store/slices/uiSlice';
 import {wishlistReducer} from '@/store/slices/wishlistSlice';
 import {restoreWishlistItems} from '@/store/wishlistPersistence';
 import {ordersReducer} from '@/store/slices/ordersSlice';
+import {platformReducer} from '@/store/slices/platformSlice';
+import {env} from '@/config/env';
+const persistenceKey = (key: string) =>
+  env.PLATFORM_ID ? `${env.PLATFORM_ID}:${key}` : key;
 
 const sessionPersistConfig = {
-  key: 'session',
+  key: persistenceKey('session'),
   storage: AsyncStorage,
 };
 
 const cartPersistConfig = {
-  key: 'cart',
+  key: persistenceKey('cart'),
   storage: AsyncStorage,
 };
 
 const wishlistPersistConfig = {
-  key: 'wishlist',
+  key: persistenceKey('wishlist'),
   storage: AsyncStorage,
   version: 1,
   migrate: createMigrate({
-    1: state => state ? {
-      ...state,
-      items: restoreWishlistItems((state as unknown as {items?: unknown}).items),
-    } : state,
+    1: state =>
+      state
+        ? {
+            ...state,
+            items: restoreWishlistItems(
+              (state as unknown as {items?: unknown}).items,
+            ),
+          }
+        : state,
   }),
 };
 
 const uiPersistConfig = {
-  key: 'ui',
+  key: persistenceKey('ui'),
   storage: AsyncStorage,
-  whitelist: ['theme', 'language'],
+  whitelist: ['theme', 'language', 'languageExplicit'],
 };
 
 const rootReducer = combineReducers({
+  platform: platformReducer,
   session: persistReducer(sessionPersistConfig, sessionReducer),
   cart: persistReducer(cartPersistConfig, cartReducer),
   wishlist: persistReducer(wishlistPersistConfig, wishlistReducer),
   ui: persistReducer(uiPersistConfig, uiReducer),
-  orders: persistReducer({key: 'orders', storage: AsyncStorage, whitelist: ['pendingCheckout']}, ordersReducer),
+  orders: persistReducer(
+    {
+      key: persistenceKey('orders'),
+      storage: AsyncStorage,
+      whitelist: ['pendingCheckout'],
+    },
+    ordersReducer,
+  ),
   [shopxGraphqlApi.reducerPath]: shopxGraphqlApi.reducer,
 });
 

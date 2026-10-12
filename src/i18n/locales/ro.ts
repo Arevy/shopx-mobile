@@ -5,6 +5,10 @@ import PageHome from '../resources/ro/Page_Home.json';
 
 export const ro = {
   common: {
+    platform: {
+      connecting: 'Se conectează la platforma ta…',
+      unavailable: 'Platforma nu este disponibilă. Se reîncearcă…',
+    },
     vatIncluded: 'TVA inclus',
     appName: '{{siteName}} Mobile',
     description: 'Experiența completă ShopX direct pe telefon.',

@@ -102,8 +102,7 @@ const MainTabsNavigator: React.FC = () => {
             size={size}
           />
         ),
-      })}
-    >
+      })}>
       <Tab.Screen
         name="HomeStack"
         component={HomeStackNavigator}
@@ -129,6 +128,9 @@ const MainTabsNavigator: React.FC = () => {
 };
 
 const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
+  const siteName =
+    useAppSelector(state => state.platform.configuration?.displayName) ||
+    env.SITE_NAME;
   const {navigation} = props;
   const {t} = useAppTranslation(['navigation', 'common', 'home', 'cart']);
   const session = useAppSelector(state => state.session);
@@ -249,10 +251,13 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
   return (
     <DrawerContentScrollView
       {...props}
-      contentContainerStyle={styles.drawerScroll}
-    >
-      <View style={[styles.drawerHeader, {borderBottomColor: theme.colors.surfaceVariant}]}> 
-        <Text variant="titleMedium">{env.SITE_NAME}</Text>
+      contentContainerStyle={styles.drawerScroll}>
+      <View
+        style={[
+          styles.drawerHeader,
+          {borderBottomColor: theme.colors.surfaceVariant},
+        ]}>
+        <Text variant="titleMedium">{siteName}</Text>
         {session.user ? (
           <View style={styles.statusContainer}>
             <Text variant="bodySmall" style={styles.statusSubtitle}>
@@ -261,8 +266,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
             <Button
               mode="contained-tonal"
               onPress={() => handleNavigateToTab('Account')}
-              compact
-            >
+              compact>
               {t('navigation.drawer.goToAccount')}
             </Button>
           </View>
@@ -274,8 +278,7 @@ const DrawerContent: React.FC<DrawerContentComponentProps> = props => {
             <Button
               mode="contained"
               onPress={() => handleNavigateToTab('Account')}
-              compact
-            >
+              compact>
               {t('navigation.drawer.signInCta')}
             </Button>
           </View>
@@ -303,8 +306,7 @@ export const RootNavigator: React.FC = () => {
         headerStyle: {backgroundColor: theme.colors.surface},
         headerShadowVisible: false,
       }}
-      drawerContent={props => <DrawerContent {...props} />}
-    >
+      drawerContent={props => <DrawerContent {...props} />}>
       <Drawer.Screen
         name="HomeTabs"
         component={MainTabsNavigator}

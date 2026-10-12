@@ -9,6 +9,10 @@ export const fr = {
   ...en,
   common: {
     ...en.common,
+    platform: {
+      connecting: 'Connexion à votre plateforme…',
+      unavailable: 'Plateforme indisponible. Nouvelle tentative…',
+    },
     vatIncluded: 'TVA incluse',
     actions: {...en.common.actions, loadMore: 'Afficher plus'},
     language: {

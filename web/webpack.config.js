@@ -90,27 +90,35 @@ module.exports = (env = {}, argv = {}) => {
     ...process.env,
   };
 
-  const publicKeys = new Set(['GRAPHQL_ENDPOINT', 'IMAGE_CDN_URL', 'SITE_NAME',
-    'SERVER_SERVICES_BASE_PATH', 'USE_SERVER_SERVICES', 'SERVER_SERVICES_TOKEN']);
-  const definedEnv = Object.entries(rawEnv).filter(([key]) => publicKeys.has(key)).reduce(
-    (acc, [key, value]) => {
-      if (typeof key === 'string') {
-        acc[`process.env.${key}`] = JSON.stringify(value);
-      }
-      return acc;
-    },
-    {
-      'process.env.NODE_ENV': JSON.stringify(
-        process.env.NODE_ENV || (isProduction ? 'production' : 'development'),
-      ),
-      __DEV__: JSON.stringify(!isProduction),
-    },
-  );
+  const publicKeys = new Set([
+    'GRAPHQL_ENDPOINT',
+    'IMAGE_CDN_URL',
+    'SITE_NAME',
+    'PLATFORM_ID',
+    'SERVER_SERVICES_BASE_PATH',
+    'USE_SERVER_SERVICES',
+    'SERVER_SERVICES_TOKEN',
+  ]);
+  const definedEnv = Object.entries(rawEnv)
+    .filter(([key]) => publicKeys.has(key))
+    .reduce(
+      (acc, [key, value]) => {
+        if (typeof key === 'string') {
+          acc[`process.env.${key}`] = JSON.stringify(value);
+        }
+        return acc;
+      },
+      {
+        'process.env.NODE_ENV': JSON.stringify(
+          process.env.NODE_ENV || (isProduction ? 'production' : 'development'),
+        ),
+        __DEV__: JSON.stringify(!isProduction),
+      },
+    );
 
   const hostMeta = parseHostInput(rawEnv.WEB_HOST);
   const envPort = parsePort(rawEnv.WEB_PORT);
-  const devServerPort =
-    envPort ?? hostMeta.port ?? (isDesktop ? 8082 : 8083);
+  const devServerPort = envPort ?? hostMeta.port ?? (isDesktop ? 8082 : 8083);
   const devServerHost = hostMeta.hostname;
   const devServerProtocol = (rawEnv.WEB_PROTOCOL || hostMeta.protocol || 'http')
     .toString()

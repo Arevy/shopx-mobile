@@ -5,6 +5,10 @@ import PageHome from '../resources/en/Page_Home.json';
 
 export const en = {
   common: {
+    platform: {
+      connecting: 'Connecting to your platform…',
+      unavailable: 'Platform unavailable. Retrying…',
+    },
     vatIncluded: 'VAT included',
     appName: '{{siteName}} Mobile',
     description: 'The full ShopX commerce experience on the go.',

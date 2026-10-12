@@ -9,6 +9,10 @@ export const he = {
   ...en,
   common: {
     ...en.common,
+    platform: {
+      connecting: 'מתחברים לפלטפורמה שלך…',
+      unavailable: 'הפלטפורמה אינה זמינה. מנסים שוב…',
+    },
     vatIncluded: 'כולל מע״מ',
     actions: {...en.common.actions, loadMore: 'טעינת עוד'},
     language: {
