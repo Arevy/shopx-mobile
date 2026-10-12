@@ -205,13 +205,13 @@ Use the existing [theme](src/theme), reusable components, navigation types, and 
 | Command | Scope |
 | --- | --- |
 | `npm run typecheck` | TypeScript without a build |
-| `npm test` | 12 tests: wishlist migration/validation, six-language keys, icon names and platform image URLs |
+| `npm test` | 15 tests: wishlist migration/validation, six-language keys, icons, image URLs, platform identity and locale preferences |
 | `npm run test:watch` | The same Node tests in watch mode |
 | `npm run lint` | ESLint, allowing no warnings |
 | `npm run prettier` | Prettier check for `src/` |
 | `npm run lint:fix`, `npm run prettier:fix` | Apply code/formatting changes |
 
-On October 12, 2026, all 12 tests and TypeScript passed again. The unused `Product` import was removed, and ESLint now passes without warnings. Tests run with `node --test`, not Jest/RNTL, even though those packages are dependencies.
+On October 12, 2026, the factory milestone passed all 15 tests, TypeScript, `npm run lint` and explicit ESLint checks for the platform/image tests. The earlier catalog milestone also removed the unused `Product` import. Tests run with `node --test`, not Jest/RNTL, even though those packages are dependencies.
 
 Workspace `../scripts/browser-smoke.cjs` checks RN web in Chrome; `../scripts/desktop-smoke.cjs` opens Electron against port 8083 using a temporary profile. Checkout smoke tests require valid SUPPORT credentials and create QA data. API smoke and all four starter-account checks pass against recovered `AREVY`, including the RN web proxy. Chrome also passed login, wishlist/reload, both icon fonts and retry after a lost payment response without creating a second order. The [workspace verification record](../docs/development-status.md) records current Chrome, Electron and iOS simulator checks separately; browser/API results do not establish physical-device behavior.
 
@@ -257,3 +257,13 @@ The [workspace verification record](../docs/development-status.md) distinguishes
 | [src/store](src/store) | Redux slices and persistence |
 | [src/theme](src/theme), [src/utils](src/utils) | Theme and formatting/image helpers |
 | `web/`, `desktop/`, `ios/`, `android/` | Platform integration |
+
+## Connecting to an independent managed platform
+
+A platform-specific build can set `PLATFORM_ID=sx_<12 hex characters>` together with its own reachable `GRAPHQL_ENDPOINT`. Keep the two values paired; a managed client waits for the backend's matching `/platform-config` before mounting commerce screens. A mismatch or initial outage shows an unavailable state and retries periodically instead of mounting against another business.
+
+The public configuration is stored in a Redux slice and refreshed on foreground entry and a 30-second interval while active. Business names are used in the header/drawer/document title, and dark-theme colors map to React Native Paper/navigation. The configured locale supplies the default while preserving explicit user language choices. Session, cart, wishlist, UI and pending-checkout persistence keys are prefixed with the configured platform ID. A build without `PLATFORM_ID` retains the previous storage keys and behavior.
+
+Managed product URLs such as `/api/products/1/image` resolve against that build's backend, even when an unrelated image CDN is configured. Images, products, orders and accounts continue to come from the backend; there is no mock catalog.
+
+This adapter does not publish native applications or create signing identities. The first factory provider deploys storefront/admin/API/Redis/gateway; RN web, native and Electron distribution remain separate build/deployment tasks. Its generated gateway is bound to host loopback and routes by hostname, so a native device needs an explicitly reachable hostname/gateway setup; changing only the port with `adb reverse` does not supply that virtual host. Do not point a platform ID at the original shared ShopX API as a workaround.

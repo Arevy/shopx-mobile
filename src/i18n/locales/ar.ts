@@ -9,6 +9,10 @@ export const ar = {
   ...en,
   common: {
     ...en.common,
+    platform: {
+      connecting: 'جارٍ الاتصال بمنصتك…',
+      unavailable: 'المنصة غير متاحة. جارٍ إعادة المحاولة…',
+    },
     vatIncluded: 'شامل الضريبة',
     actions: {...en.common.actions, loadMore: 'عرض المزيد'},
     language: {

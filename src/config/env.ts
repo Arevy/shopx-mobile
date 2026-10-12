@@ -20,6 +20,10 @@ const parseBoolean = (value?: string): boolean => {
 };
 
 const envSchema = z.object({
+  PLATFORM_ID: z
+    .string()
+    .regex(/^sx_[a-f0-9]{12}$/)
+    .optional(),
   GRAPHQL_ENDPOINT: z.string().url(),
   IMAGE_CDN_URL: z.string().url().optional(),
   SITE_NAME: z.string().min(1),
@@ -29,6 +33,7 @@ const envSchema = z.object({
 });
 
 const rawConfig = {
+  PLATFORM_ID: Config.PLATFORM_ID || undefined,
   GRAPHQL_ENDPOINT: Config.GRAPHQL_ENDPOINT ?? DEFAULT_GRAPHQL_ENDPOINT,
   IMAGE_CDN_URL: Config.IMAGE_CDN_URL,
   SITE_NAME: Config.SITE_NAME ?? DEFAULT_SITE_NAME,

@@ -3,12 +3,14 @@ import type {PayloadAction} from '@reduxjs/toolkit';
 
 import type {SupportedLanguage} from '@/i18n';
 import {i18n} from '@/i18n';
+import {refreshPlatform} from './platformSlice';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 
 export type UIState = {
   theme: ThemePreference;
   language: SupportedLanguage;
+  languageExplicit?: boolean;
   hasCompletedOnboarding: boolean;
 };
 
@@ -27,11 +29,18 @@ const uiSlice = createSlice({
     },
     setLanguage(state, action: PayloadAction<SupportedLanguage>) {
       state.language = action.payload;
+      state.languageExplicit = true;
     },
     setHasCompletedOnboarding(state, action: PayloadAction<boolean>) {
       state.hasCompletedOnboarding = action.payload;
     },
   },
+  extraReducers: builder =>
+    builder.addCase(refreshPlatform.fulfilled, (state, action) => {
+      if (action.payload && !state.languageExplicit) {
+        state.language = action.payload.locale as SupportedLanguage;
+      }
+    }),
 });
 
 export const {setTheme, setLanguage, setHasCompletedOnboarding} =

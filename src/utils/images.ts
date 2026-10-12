@@ -7,6 +7,9 @@ export const resolveImageUrl = (url?: string | null): string | undefined => {
   if (!url) {
     return undefined;
   }
+  if (/^\/api\/products\/\d+\/image(?:\?|$)/.test(url)) {
+    return new URL(url, env.ORIGINAL_GRAPHQL_ENDPOINT).toString();
+  }
 
   if (/^https?:\/\//i.test(url)) {
     // Compose's browser-facing *.localhost alias is not a native transport

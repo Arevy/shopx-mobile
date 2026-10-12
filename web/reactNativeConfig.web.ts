@@ -2,7 +2,8 @@ const DEFAULT_GRAPHQL_ENDPOINT = 'http://localhost:4000/graphql';
 const DEFAULT_SITE_NAME = 'ShopX';
 const DEFAULT_SERVER_SERVICES_BASE_PATH = '/api/serverSideServices';
 
-const configuredEndpoint = process.env.GRAPHQL_ENDPOINT ?? DEFAULT_GRAPHQL_ENDPOINT;
+const configuredEndpoint =
+  process.env.GRAPHQL_ENDPOINT ?? DEFAULT_GRAPHQL_ENDPOINT;
 const graphqlEndpoint = new URL(configuredEndpoint);
 if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
   // Use the browser/Electron origin even when opened as 127.0.0.1 instead of localhost.
@@ -12,6 +13,7 @@ if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
 
 // Web fallback for react-native-config. Values can be overridden by process.env.
 const Config = {
+  PLATFORM_ID: process.env.PLATFORM_ID,
   GRAPHQL_ENDPOINT: graphqlEndpoint.toString(),
   IMAGE_CDN_URL: process.env.IMAGE_CDN_URL,
   SITE_NAME: process.env.SITE_NAME ?? DEFAULT_SITE_NAME,

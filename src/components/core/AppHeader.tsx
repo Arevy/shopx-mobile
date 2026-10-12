@@ -7,6 +7,7 @@ import {DrawerActions} from '@react-navigation/native';
 
 import {env} from '@/config/env';
 import {useAppTranslation} from '@/hooks/useAppTranslation';
+import {useAppSelector} from '@/store/hooks';
 
 type AppHeaderProps = Pick<DrawerHeaderProps, 'navigation'>;
 
@@ -17,6 +18,9 @@ const buildHeaderStyle = (topInset: number, surfaceColor: string) => ({
 });
 
 export const AppHeader: React.FC<AppHeaderProps> = ({navigation}) => {
+  const siteName =
+    useAppSelector(state => state.platform.configuration?.displayName) ||
+    env.SITE_NAME;
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const {t} = useAppTranslation('common');
@@ -35,7 +39,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({navigation}) => {
         accessibilityLabel={t('actions.openDrawer')}
       />
       <Text variant="titleLarge" style={styles.title} numberOfLines={1}>
-        {env.SITE_NAME}
+        {siteName}
       </Text>
       <View style={styles.spacer} />
       <IconButton
