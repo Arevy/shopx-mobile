@@ -10,14 +10,15 @@ import {fr} from './locales/fr';
 import {de} from './locales/de';
 import {ar} from './locales/ar';
 import {he} from './locales/he';
+import {withCommerceResources} from './commerceResources';
 
 const resources = {
-  en,
-  ro,
-  fr,
-  de,
-  ar,
-  he,
+  en: withCommerceResources(en, 'en'),
+  ro: withCommerceResources(ro, 'ro'),
+  fr: withCommerceResources(fr, 'fr'),
+  de: withCommerceResources(de, 'de'),
+  ar: withCommerceResources(ar, 'ar'),
+  he: withCommerceResources(he, 'he'),
 };
 
 export type SupportedLanguage = keyof typeof resources;
@@ -28,6 +29,7 @@ export const namespaces = [
   'navigation',
   'home',
   'cart',
+  'checkout',
   'wishlist',
   'product',
   'account',

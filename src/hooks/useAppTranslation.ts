@@ -15,7 +15,10 @@ export const useAppTranslation = (
   const translation = useTranslation(ns as any, options as any);
 
   const translate = useCallback(
-    (key: string, opts?: Record<string, unknown>) => {
+    (key: string, optionsOrDefault?: Record<string, unknown> | string) => {
+      const opts = typeof optionsOrDefault === 'string'
+        ? {defaultValue: optionsOrDefault}
+        : optionsOrDefault;
       const hasNamespaceInOptions =
         opts && Object.prototype.hasOwnProperty.call(opts, 'ns');
 

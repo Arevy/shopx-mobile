@@ -164,6 +164,7 @@ export const shopxGraphqlApi = createApi({
         document: ADD_TO_CART,
         variables,
       }),
+      transformResponse: (response: AddToCartMutation) => response.addToCart,
       invalidatesTags: [{type: 'Cart', id: 'CURRENT'}],
     }),
     removeFromCart: builder.mutation<
@@ -174,6 +175,7 @@ export const shopxGraphqlApi = createApi({
         document: REMOVE_FROM_CART,
         variables,
       }),
+      transformResponse: (response: RemoveFromCartMutation) => response.removeFromCart,
       invalidatesTags: [{type: 'Cart', id: 'CURRENT'}],
     }),
     clearCart: builder.mutation<
@@ -184,10 +186,11 @@ export const shopxGraphqlApi = createApi({
         document: CLEAR_CART,
         variables,
       }),
+      transformResponse: (response: ClearCartMutation) => response.clearCart,
       invalidatesTags: [{type: 'Cart', id: 'CURRENT'}],
     }),
     getWishlist: builder.query<
-      GetWishlistQuery['getWishlist'],
+      GetWishlistQuery['getWishlist']['products'],
       GetWishlistVariables
     >({
       query: variables => ({
@@ -195,7 +198,7 @@ export const shopxGraphqlApi = createApi({
         variables,
       }),
       providesTags: [{type: 'Wishlist', id: 'CURRENT'}],
-      transformResponse: (response: GetWishlistQuery) => response.getWishlist,
+      transformResponse: (response: GetWishlistQuery) => response.getWishlist.products,
       async onQueryStarted(_arg, {dispatch, queryFulfilled}) {
         try {
           const {data} = await queryFulfilled;
@@ -213,6 +216,7 @@ export const shopxGraphqlApi = createApi({
         document: ADD_TO_WISHLIST,
         variables,
       }),
+      transformResponse: (response: AddToWishlistMutation) => response.addToWishlist,
       invalidatesTags: [{type: 'Wishlist', id: 'CURRENT'}],
     }),
     removeFromWishlist: builder.mutation<
@@ -223,6 +227,7 @@ export const shopxGraphqlApi = createApi({
         document: REMOVE_FROM_WISHLIST,
         variables,
       }),
+      transformResponse: (response: RemoveFromWishlistMutation) => response.removeFromWishlist,
       invalidatesTags: [{type: 'Wishlist', id: 'CURRENT'}],
     }),
     register: builder.mutation<
@@ -269,6 +274,8 @@ export const shopxGraphqlApi = createApi({
       onQueryStarted: async (_arg, {dispatch, queryFulfilled}) => {
         try {
           await queryFulfilled;
+        } catch {
+          // The mutation result carries the error; local logout must still complete.
         } finally {
           dispatch(clearSession());
           dispatch(clearCart());

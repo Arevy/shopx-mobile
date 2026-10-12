@@ -21,24 +21,48 @@
 
 @end
 
-@implementation AppDelegate {
+@interface AppDelegate ()
+@property (nonatomic, copy) NSDictionary *launchOptions;
+@end
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+  self.launchOptions = launchOptions;
+  return YES;
+}
+
+@end
+
+// The SDK shipped with Xcode 27 requires a scene-owned application window.
+// Keep the RN factory alive for the lifetime of that scene.
+@interface ShopxSceneDelegate : UIResponder <UIWindowSceneDelegate>
+@property (nonatomic, strong) UIWindow *window;
+@end
+
+@implementation ShopxSceneDelegate {
   RCTReactNativeFactory *_reactNativeFactory;
   ShopxReactNativeDelegate *_factoryDelegate;
 }
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions
 {
+  if (![scene isKindOfClass:[UIWindowScene class]]) {
+    return;
+  }
+
   _factoryDelegate = [ShopxReactNativeDelegate new];
   _factoryDelegate.dependencyProvider = [RCTAppDependencyProvider new];
   _reactNativeFactory = [[RCTReactNativeFactory alloc] initWithDelegate:_factoryDelegate];
 
-  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+  self.window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
+  AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
+  appDelegate.window = self.window;
 
   [_reactNativeFactory startReactNativeWithModuleName:@"shopxMobile"
                                              inWindow:self.window
-                                        launchOptions:launchOptions];
-
-  return YES;
+                                        launchOptions:appDelegate.launchOptions];
 }
 
 @end

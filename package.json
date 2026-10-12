@@ -15,8 +15,8 @@
     "lint": "eslint --max-warnings=0 .",
     "lint:fix": "eslint --max-warnings=0 . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"Tests are temporarily disabled for the RN 0.82 migration\" && exit 0",
-    "test:watch": "echo \"Tests are temporarily disabled for the RN 0.82 migration\" && exit 0",
+    "test": "node --test tests/*.test.cjs",
+    "test:watch": "node --test --watch tests/*.test.cjs",
     "prettier": "prettier --check \"src/**/*.{ts,tsx,json}\"",
     "prettier:fix": "prettier --write \"src/**/*.{ts,tsx,json}\"",
     "postinstall": "patch-package"

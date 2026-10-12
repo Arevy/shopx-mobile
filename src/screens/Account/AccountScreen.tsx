@@ -304,7 +304,7 @@ export const AccountScreen: React.FC = () => {
     }
 
     try {
-      const result = await updateProfile({
+      await updateProfile({
         input: {
           name: trimmedName,
           email: trimmedEmail,
@@ -313,7 +313,7 @@ export const AccountScreen: React.FC = () => {
       }).unwrap();
 
       setProfilePassword('');
-      setProfileSuccess(result.message ?? 'Profile updated successfully.');
+      setProfileSuccess(t('account.profile.updated'));
     } catch (err) {
       console.warn('update profile failed', err);
       setProfileError(
@@ -449,6 +449,7 @@ export const AccountScreen: React.FC = () => {
             <View style={styles.form}>
               <TextInput
                 label={t('account.forms.emailLabel', 'Email')}
+                accessibilityLabel={t('account.forms.emailLabel', 'Email')}
                 value={loginEmail}
                 onChangeText={setLoginEmail}
                 keyboardType="email-address"
@@ -458,6 +459,7 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.forms.passwordLabel', 'Password')}
+                accessibilityLabel={t('account.forms.passwordLabel', 'Password')}
                 value={loginPassword}
                 onChangeText={setLoginPassword}
                 secureTextEntry
@@ -490,6 +492,7 @@ export const AccountScreen: React.FC = () => {
             <View style={styles.form}>
               <TextInput
                 label={t('account.register.nameLabel', 'Full name')}
+                accessibilityLabel={t('account.register.nameLabel', 'Full name')}
                 value={registerName}
                 onChangeText={setRegisterName}
                 autoCapitalize="words"
@@ -497,6 +500,7 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.forms.emailLabel', 'Email')}
+                accessibilityLabel={t('account.forms.emailLabel', 'Email')}
                 value={registerEmail}
                 onChangeText={setRegisterEmail}
                 autoCapitalize="none"
@@ -505,6 +509,7 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.forms.passwordLabel', 'Password')}
+                accessibilityLabel={t('account.forms.passwordLabel', 'Password')}
                 value={registerPassword}
                 onChangeText={setRegisterPassword}
                 secureTextEntry
@@ -512,6 +517,7 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.register.confirmLabel', 'Confirm password')}
+                accessibilityLabel={t('account.register.confirmLabel', 'Confirm password')}
                 value={registerConfirm}
                 onChangeText={setRegisterConfirm}
                 secureTextEntry
@@ -601,6 +607,7 @@ export const AccountScreen: React.FC = () => {
             <View style={styles.form}>
               <TextInput
                 label={t('account.forms.nameLabel', 'Full name')}
+                accessibilityLabel={t('account.forms.nameLabel', 'Full name')}
                 value={profileForm.name}
                 onChangeText={value =>
                   setProfileForm(prev => ({...prev, name: value}))
@@ -608,6 +615,7 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.forms.emailLabel', 'Email')}
+                accessibilityLabel={t('account.forms.emailLabel', 'Email')}
                 value={profileForm.email}
                 onChangeText={value =>
                   setProfileForm(prev => ({...prev, email: value}))
@@ -618,6 +626,7 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.profile.passwordLabel', 'Current password')}
+                accessibilityLabel={t('account.profile.passwordLabel', 'Current password')}
                 value={profilePassword}
                 onChangeText={setProfilePassword}
                 secureTextEntry
@@ -694,7 +703,7 @@ export const AccountScreen: React.FC = () => {
           <Surface style={styles.card} elevation={1}>
             <View style={styles.addressHeader}>
               <Text variant="titleMedium">
-                {t('account.addresses', 'Saved addresses')}
+                {t('account.addresses.heading', 'Saved addresses')}
               </Text>
               <Button
                 mode="text"
@@ -758,6 +767,7 @@ export const AccountScreen: React.FC = () => {
           <View style={styles.form}>
             <TextInput
               label={t('account.security.current', 'Current password')}
+              accessibilityLabel={t('account.security.current', 'Current password')}
               value={passwordForm.current}
               onChangeText={value =>
                 setPasswordForm(prev => ({...prev, current: value}))
@@ -766,6 +776,7 @@ export const AccountScreen: React.FC = () => {
             />
             <TextInput
               label={t('account.security.new', 'New password')}
+              accessibilityLabel={t('account.security.new', 'New password')}
               value={passwordForm.next}
               onChangeText={value =>
                 setPasswordForm(prev => ({...prev, next: value}))
@@ -774,6 +785,7 @@ export const AccountScreen: React.FC = () => {
             />
             <TextInput
               label={t('account.security.confirm', 'Confirm password')}
+              accessibilityLabel={t('account.security.confirm', 'Confirm password')}
               value={passwordForm.confirm}
               onChangeText={value =>
                 setPasswordForm(prev => ({...prev, confirm: value}))

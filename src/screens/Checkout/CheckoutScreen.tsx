@@ -11,7 +11,8 @@ import {
 import {useNavigation} from '@react-navigation/native';
 
 import {Screen} from '@/components/core/Screen';
-import {AddressFormFields, AddressFormValues} from '@/components/forms/AddressFormFields';
+import {AddressFormFields} from '@/components/forms/AddressFormFields';
+import type {AddressFormValues} from '@/components/forms/AddressFormFields';
 import {useAppSelector, useAppDispatch} from '@/store/hooks';
 import {formatCurrency} from '@/utils/currency';
 import {
@@ -23,8 +24,7 @@ import {
 } from '@/services/graphql/shopxGraphqlApi';
 import type {CartStackNavigation, RootDrawerNavigation} from '@/navigation/types';
 import {useAppTranslation} from '@/hooks/useAppTranslation';
-import {clearCart} from '@/store/slices/cartSlice';
-import {setOrders} from '@/store/slices/ordersSlice';
+import {setOrders, setPendingCheckout} from '@/store/slices/ordersSlice';
 
 type PaymentMethodId = 'CARD' | 'TRANSFER' | 'CASH';
 
@@ -44,9 +44,11 @@ export const CheckoutScreen: React.FC = () => {
   const cart = useAppSelector(state => state.cart);
 
   const userId = session.user?.id;
+  const pendingCheckout = useAppSelector(state => state.orders.pendingCheckout);
+  const pendingOrder = pendingCheckout?.userId === userId ? pendingCheckout : undefined;
   const isAuthenticated = Boolean(userId);
 
-  const [selectedAddressId, setSelectedAddressId] = useState<string>('new');
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
   const [addressForm, setAddressForm] = useState<AddressFormValues>(
     defaultAddressForm,
   );
@@ -71,10 +73,10 @@ export const CheckoutScreen: React.FC = () => {
   );
 
   useEffect(() => {
-    if (addresses.length && selectedAddressId === 'new') {
-      setSelectedAddressId(addresses[0].id);
+    if (!addressesLoading && selectedAddressId === '') {
+      setSelectedAddressId(addresses[0]?.id ?? 'new');
     }
-  }, [addresses, selectedAddressId]);
+  }, [addresses, addressesLoading, selectedAddressId]);
 
   const [addAddress, {isLoading: isSavingAddress}] = useAddAddressMutation();
   const [createOrder, {isLoading: isPlacingOrder}] = useCreateOrderMutation();
@@ -88,11 +90,11 @@ export const CheckoutScreen: React.FC = () => {
 
   const paymentOptions = useMemo(
     () => [
-      {value: 'CARD', label: 'Card'},
-      {value: 'TRANSFER', label: 'Bank transfer'},
-      {value: 'CASH', label: 'Cash'},
+      {value: 'CARD', label: t('checkout.payment.methods.card')},
+      {value: 'TRANSFER', label: t('checkout.payment.methods.transfer')},
+      {value: 'CASH', label: t('checkout.payment.methods.cash')},
     ],
-    [],
+    [t],
   );
 
   const handleAddressFormChange = <K extends keyof AddressFormValues>(
@@ -138,11 +140,12 @@ export const CheckoutScreen: React.FC = () => {
   };
 
   const handlePlaceOrder = async () => {
+    if (isBusy) return;
     if (!ensureAuthenticated()) {
       return;
     }
 
-    if (!hasItems) {
+    if (!hasItems && !pendingOrder) {
       Alert.alert(
         t('checkout.empty.title', 'Your cart is empty'),
         t('checkout.empty.subtitle', 'Add products to the cart before checkout.'),
@@ -150,7 +153,7 @@ export const CheckoutScreen: React.FC = () => {
       return;
     }
 
-    if (!ensureAddressFormValid()) {
+    if (!pendingOrder && !ensureAddressFormValid()) {
       setError(
         t(
           'checkout.errors.addressRequired',
@@ -165,7 +168,7 @@ export const CheckoutScreen: React.FC = () => {
     try {
       let addressId = selectedAddressId;
 
-      if (addressId === 'new') {
+      if (!pendingOrder && addressId === 'new') {
         const address = await addAddress({
           userId: userId!,
           ...addressForm,
@@ -176,7 +179,7 @@ export const CheckoutScreen: React.FC = () => {
         await refetchAddresses();
       }
 
-      const order = await createOrder({
+      const order = pendingOrder ?? await createOrder({
         userId: userId!,
         products: cartItems.map(item => ({
           productId: item.product.id,
@@ -184,6 +187,7 @@ export const CheckoutScreen: React.FC = () => {
           price: item.product.price,
         })),
       }).unwrap();
+      dispatch(setPendingCheckout(order));
 
       await createPayment({
         orderId: order.id,
@@ -191,7 +195,7 @@ export const CheckoutScreen: React.FC = () => {
         method: paymentMethod,
       }).unwrap();
 
-      dispatch(clearCart());
+      dispatch(setPendingCheckout(undefined));
       setOrderCompletedId(order.id);
       setSelectedAddressId(addressId);
       const refreshedOrders = await refetchOrders();
@@ -245,7 +249,7 @@ export const CheckoutScreen: React.FC = () => {
     );
   }
 
-  if (!hasItems && orderCompletedId) {
+  if (orderCompletedId) {
     return (
       <Screen contentContainerStyle={styles.successContainer}>
         <Surface elevation={1} style={styles.successCard}>
@@ -361,7 +365,8 @@ export const CheckoutScreen: React.FC = () => {
           <Text variant="titleMedium">
             {t('checkout.summary.heading', 'Order summary')}
           </Text>
-          {cartItems.map(item => (
+          {pendingOrder ? <Text>{t('checkout.success.orderNumber')}: {pendingOrder.id}</Text> : null}
+          {(pendingOrder ? [] : cartItems).map(item => (
             <View key={item.product.id} style={styles.summaryRow}>
               <View style={styles.summaryText}>
                 <Text variant="bodyMedium">{item.product.name}</Text>
@@ -381,7 +386,7 @@ export const CheckoutScreen: React.FC = () => {
               {t('cart.totalLabel', 'Total')}
             </Text>
             <Text variant="titleMedium">
-              {formatCurrency(cart.total)}
+              {formatCurrency(pendingOrder?.total ?? cart.total)}
             </Text>
           </View>
         </Surface>
@@ -397,10 +402,10 @@ export const CheckoutScreen: React.FC = () => {
           icon="check-circle"
           onPress={handlePlaceOrder}
           loading={isBusy}
-          disabled={isBusy}>
+          disabled={isBusy || addressesLoading}>
           {isBusy
             ? t('checkout.actions.processing', 'Placing order…')
-            : t('checkout.actions.submit', 'Place order')}
+            : pendingOrder ? t('common.actions.retry') : t('checkout.actions.submit', 'Place order')}
         </Button>
         <Button
           mode="text"

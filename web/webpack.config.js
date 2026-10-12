@@ -28,7 +28,8 @@ const ensureLeadingSlash = value => {
 };
 
 const parseHostInput = input => {
-  const fallback = {hostname: 'localhost', protocol: 'http', port: undefined};
+  // On macOS, localhost can bind only ::1 while Electron opens 127.0.0.1.
+  const fallback = {hostname: '127.0.0.1', protocol: 'http', port: undefined};
   if (!input) {
     return fallback;
   }
@@ -89,7 +90,9 @@ module.exports = (env = {}, argv = {}) => {
     ...process.env,
   };
 
-  const definedEnv = Object.entries(rawEnv).reduce(
+  const publicKeys = new Set(['GRAPHQL_ENDPOINT', 'IMAGE_CDN_URL', 'SITE_NAME',
+    'SERVER_SERVICES_BASE_PATH', 'USE_SERVER_SERVICES', 'SERVER_SERVICES_TOKEN']);
+  const definedEnv = Object.entries(rawEnv).filter(([key]) => publicKeys.has(key)).reduce(
     (acc, [key, value]) => {
       if (typeof key === 'string') {
         acc[`process.env.${key}`] = JSON.stringify(value);

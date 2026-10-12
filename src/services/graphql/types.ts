@@ -4,7 +4,7 @@ import type {CmsPage} from '@/types/cms';
 import type {Order} from '@/types/order';
 import type {Payment} from '@/types/order';
 import type {Category, Product, Review} from '@/types/product';
-import type {UserContext} from '@/types/userContext';
+import type {UserContext, WishlistPayload} from '@/types/userContext';
 import type {AuthPayload, User} from '@/types/user';
 
 export type GetProductsQuery = {
@@ -59,7 +59,7 @@ export type RemoveFromCartVariables = {
 };
 
 export type ClearCartMutation = {
-  clearCart: Cart;
+  clearCart: boolean;
 };
 
 export type ClearCartVariables = {
@@ -67,7 +67,7 @@ export type ClearCartVariables = {
 };
 
 export type GetWishlistQuery = {
-  getWishlist: Product[];
+  getWishlist: WishlistPayload;
 };
 
 export type GetWishlistVariables = {
@@ -75,7 +75,7 @@ export type GetWishlistVariables = {
 };
 
 export type AddToWishlistMutation = {
-  addToWishlist: Product[];
+  addToWishlist: WishlistPayload;
 };
 
 export type AddToWishlistVariables = {
@@ -84,7 +84,7 @@ export type AddToWishlistVariables = {
 };
 
 export type RemoveFromWishlistMutation = {
-  removeFromWishlist: Product[];
+  removeFromWishlist: WishlistPayload;
 };
 
 export type RemoveFromWishlistVariables = {
