@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React, {useEffect, useMemo, useState} from 'react';
 import {Alert, StyleSheet, View} from 'react-native';
 import {
@@ -51,6 +52,7 @@ const defaultAddressForm: AddressFormValues = {
 };
 
 export const AccountScreen: React.FC = () => {
+  const {colors} = useTheme();
   const session = useAppSelector(state => state.session);
   const themePreference = useAppSelector(state => state.ui.theme);
   const dispatch = useAppDispatch();
@@ -70,7 +72,8 @@ export const AccountScreen: React.FC = () => {
   const [registerConfirm, setRegisterConfirm] = useState('');
   const [registerError, setRegisterError] = useState<string | null>(null);
 
-  const [activeSection, setActiveSection] = useState<AccountSection>('overview');
+  const [activeSection, setActiveSection] =
+    useState<AccountSection>('overview');
   const [profileForm, setProfileForm] = useState(() => ({
     name: session.user?.name ?? '',
     email: session.user?.email ?? '',
@@ -88,9 +91,8 @@ export const AccountScreen: React.FC = () => {
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
   const [addressDialogVisible, setAddressDialogVisible] = useState(false);
-  const [addressForm, setAddressForm] = useState<AddressFormValues>(
-    defaultAddressForm,
-  );
+  const [addressForm, setAddressForm] =
+    useState<AddressFormValues>(defaultAddressForm);
   const [addressError, setAddressError] = useState<string | null>(null);
 
   const shouldFetch = Boolean(session.user?.id);
@@ -117,10 +119,7 @@ export const AccountScreen: React.FC = () => {
     data: ordersData,
     isFetching: ordersLoading,
     refetch: refetchOrders,
-  } = useGetOrdersQuery(
-    {userId: session.user?.id ?? ''},
-    {skip: !shouldFetch},
-  );
+  } = useGetOrdersQuery({userId: session.user?.id ?? ''}, {skip: !shouldFetch});
 
   const orders = ordersData ?? [];
 
@@ -189,10 +188,7 @@ export const AccountScreen: React.FC = () => {
     }
     if (registerPassword !== registerConfirm) {
       setRegisterError(
-        t(
-          'account.errors.passwordMismatch',
-          'Passwords do not match.',
-        ),
+        t('account.errors.passwordMismatch', 'Passwords do not match.'),
       );
       return;
     }
@@ -245,10 +241,7 @@ export const AccountScreen: React.FC = () => {
       console.warn('logout failed', err);
       Alert.alert(
         t('common.errors.genericTitle', 'Something went wrong'),
-        t(
-          'common.errors.genericMessage',
-          'Please try again in a moment.',
-        ),
+        t('common.errors.genericMessage', 'Please try again in a moment.'),
       );
     }
   };
@@ -286,9 +279,7 @@ export const AccountScreen: React.FC = () => {
       trimmedName === currentName &&
       trimmedEmail.toLowerCase() === currentEmail.toLowerCase()
     ) {
-      setProfileSuccess(
-        t('account.profile.noChanges', 'No changes detected.'),
-      );
+      setProfileSuccess(t('account.profile.noChanges', 'No changes detected.'));
       setProfilePassword('');
       return;
     }
@@ -354,10 +345,7 @@ export const AccountScreen: React.FC = () => {
 
       setPasswordForm({current: '', next: '', confirm: ''});
       setPasswordSuccess(
-        t(
-          'account.security.changed',
-          'Password updated successfully.',
-        ),
+        t('account.security.changed', 'Password updated successfully.'),
       );
     } catch (err) {
       console.warn('change password failed', err);
@@ -387,10 +375,7 @@ export const AccountScreen: React.FC = () => {
     );
     if (!isValid) {
       setAddressError(
-        t(
-          'account.addresses.required',
-          'Please complete all address fields.',
-        ),
+        t('account.addresses.required', 'Please complete all address fields.'),
       );
       return;
     }
@@ -421,7 +406,9 @@ export const AccountScreen: React.FC = () => {
           <Text variant="headlineSmall" style={styles.centerText}>
             {t('account.anonymousTitle', 'Welcome to ShopX')}
           </Text>
-          <Text variant="bodyMedium" style={styles.centerSubtext}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.centerSubtext, {color: colors.onSurfaceVariant}]}>
             {t(
               'account.anonymousSubtitle',
               'Sign in to sync your cart, wishlist, and order history across devices.',
@@ -442,7 +429,7 @@ export const AccountScreen: React.FC = () => {
         />
 
         {authMode === 'login' ? (
-          <View style={styles.card}>
+          <View style={[styles.card, {backgroundColor: colors.surfaceVariant}]}>
             <Text variant="titleMedium">
               {t('account.login.heading', 'Sign in to your account')}
             </Text>
@@ -459,7 +446,10 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.forms.passwordLabel', 'Password')}
-                accessibilityLabel={t('account.forms.passwordLabel', 'Password')}
+                accessibilityLabel={t(
+                  'account.forms.passwordLabel',
+                  'Password',
+                )}
                 value={loginPassword}
                 onChangeText={setLoginPassword}
                 secureTextEntry
@@ -485,14 +475,17 @@ export const AccountScreen: React.FC = () => {
             </View>
           </View>
         ) : (
-          <View style={styles.card}>
+          <View style={[styles.card, {backgroundColor: colors.surfaceVariant}]}>
             <Text variant="titleMedium">
               {t('account.register.heading', 'Create a new account')}
             </Text>
             <View style={styles.form}>
               <TextInput
                 label={t('account.register.nameLabel', 'Full name')}
-                accessibilityLabel={t('account.register.nameLabel', 'Full name')}
+                accessibilityLabel={t(
+                  'account.register.nameLabel',
+                  'Full name',
+                )}
                 value={registerName}
                 onChangeText={setRegisterName}
                 autoCapitalize="words"
@@ -509,7 +502,10 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.forms.passwordLabel', 'Password')}
-                accessibilityLabel={t('account.forms.passwordLabel', 'Password')}
+                accessibilityLabel={t(
+                  'account.forms.passwordLabel',
+                  'Password',
+                )}
                 value={registerPassword}
                 onChangeText={setRegisterPassword}
                 secureTextEntry
@@ -517,7 +513,10 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.register.confirmLabel', 'Confirm password')}
-                accessibilityLabel={t('account.register.confirmLabel', 'Confirm password')}
+                accessibilityLabel={t(
+                  'account.register.confirmLabel',
+                  'Confirm password',
+                )}
                 value={registerConfirm}
                 onChangeText={setRegisterConfirm}
                 secureTextEntry
@@ -552,7 +551,11 @@ export const AccountScreen: React.FC = () => {
   }
 
   if (isFetching && !userContext) {
-    return <LoadingState label={t('account.info.sessionHydrating', 'Loading profile…')} />;
+    return (
+      <LoadingState
+        label={t('account.info.sessionHydrating', 'Loading profile…')}
+      />
+    );
   }
 
   if (error) {
@@ -572,7 +575,9 @@ export const AccountScreen: React.FC = () => {
             name: session.user?.name ?? session.user?.email,
           })}
         </Text>
-        <Text variant="bodyMedium" style={styles.muted}>
+        <Text
+          variant="bodyMedium"
+          style={[styles.muted, {color: colors.onSurfaceVariant}]}>
           {t('account.role', {
             role: t(`account.roles.${session.user?.role ?? 'CUSTOMER'}`),
           })}
@@ -600,7 +605,9 @@ export const AccountScreen: React.FC = () => {
 
       {activeSection === 'overview' ? (
         <>
-          <Surface style={styles.card} elevation={1}>
+          <Surface
+            style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+            elevation={1}>
             <Text variant="titleMedium">
               {t('account.profile.heading', 'Profile details')}
             </Text>
@@ -626,7 +633,10 @@ export const AccountScreen: React.FC = () => {
               />
               <TextInput
                 label={t('account.profile.passwordLabel', 'Current password')}
-                accessibilityLabel={t('account.profile.passwordLabel', 'Current password')}
+                accessibilityLabel={t(
+                  'account.profile.passwordLabel',
+                  'Current password',
+                )}
                 value={profilePassword}
                 onChangeText={setProfilePassword}
                 secureTextEntry
@@ -652,7 +662,9 @@ export const AccountScreen: React.FC = () => {
             </View>
           </Surface>
 
-          <Surface style={styles.card} elevation={1}>
+          <Surface
+            style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+            elevation={1}>
             <Text variant="titleMedium">{t('account.theme', 'Theme')}</Text>
             <SegmentedButtons
               value={themePreference}
@@ -674,7 +686,9 @@ export const AccountScreen: React.FC = () => {
             />
           </Surface>
 
-          <Surface style={styles.card} elevation={1}>
+          <Surface
+            style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+            elevation={1}>
             <Text variant="titleMedium">
               {t('account.activity', 'Your activity')}
             </Text>
@@ -700,7 +714,9 @@ export const AccountScreen: React.FC = () => {
             </View>
           </Surface>
 
-          <Surface style={styles.card} elevation={1}>
+          <Surface
+            style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+            elevation={1}>
             <View style={styles.addressHeader}>
               <Text variant="titleMedium">
                 {t('account.addresses.heading', 'Saved addresses')}
@@ -724,13 +740,17 @@ export const AccountScreen: React.FC = () => {
                   <Text variant="bodyMedium">
                     {address.street}, {address.city}
                   </Text>
-                  <Text variant="bodySmall" style={styles.muted}>
+                  <Text
+                    variant="bodySmall"
+                    style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                     {address.postalCode}, {address.country}
                   </Text>
                 </View>
               ))
             ) : (
-              <Text variant="bodyMedium" style={styles.muted}>
+              <Text
+                variant="bodyMedium"
+                style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                 {t(
                   'account.noAddresses',
                   'No saved addresses yet. Add one to speed up checkout.',
@@ -740,17 +760,23 @@ export const AccountScreen: React.FC = () => {
           </Surface>
 
           {deviceInfo ? (
-            <Surface style={styles.card} elevation={1}>
+            <Surface
+              style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+              elevation={1}>
               <Text variant="titleMedium">
                 {t('account.device', 'Signed in on')}
               </Text>
               <View style={styles.deviceInfo}>
                 <Text variant="bodyMedium">{deviceInfo.name}</Text>
-                <Text variant="bodySmall" style={styles.muted}>
+                <Text
+                  variant="bodySmall"
+                  style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                   {deviceInfo.brand} {deviceInfo.model} ·{' '}
                   {deviceInfo.systemVersion}
                 </Text>
-                <Text variant="bodySmall" style={styles.muted}>
+                <Text
+                  variant="bodySmall"
+                  style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                   App v{deviceInfo.appVersion} ({deviceInfo.buildNumber})
                 </Text>
               </View>
@@ -760,14 +786,19 @@ export const AccountScreen: React.FC = () => {
       ) : null}
 
       {activeSection === 'security' ? (
-        <Surface style={styles.card} elevation={1}>
+        <Surface
+          style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+          elevation={1}>
           <Text variant="titleMedium">
             {t('account.security.heading', 'Change password')}
           </Text>
           <View style={styles.form}>
             <TextInput
               label={t('account.security.current', 'Current password')}
-              accessibilityLabel={t('account.security.current', 'Current password')}
+              accessibilityLabel={t(
+                'account.security.current',
+                'Current password',
+              )}
               value={passwordForm.current}
               onChangeText={value =>
                 setPasswordForm(prev => ({...prev, current: value}))
@@ -785,7 +816,10 @@ export const AccountScreen: React.FC = () => {
             />
             <TextInput
               label={t('account.security.confirm', 'Confirm password')}
-              accessibilityLabel={t('account.security.confirm', 'Confirm password')}
+              accessibilityLabel={t(
+                'account.security.confirm',
+                'Confirm password',
+              )}
               value={passwordForm.confirm}
               onChangeText={value =>
                 setPasswordForm(prev => ({...prev, confirm: value}))
@@ -815,7 +849,9 @@ export const AccountScreen: React.FC = () => {
       ) : null}
 
       {activeSection === 'orders' ? (
-        <Surface style={styles.card} elevation={1}>
+        <Surface
+          style={[styles.card, {backgroundColor: colors.surfaceVariant}]}
+          elevation={1}>
           <Text variant="titleMedium">
             {t('account.orders.heading', 'Order history')}
           </Text>
@@ -826,21 +862,32 @@ export const AccountScreen: React.FC = () => {
           ) : orders.length ? (
             <View style={styles.ordersList}>
               {orders.map(order => (
-                <Surface key={order.id} style={styles.orderCard} elevation={0}>
+                <Surface
+                  key={order.id}
+                  style={[
+                    styles.orderCard,
+                    {backgroundColor: colors.surfaceVariant},
+                  ]}
+                  elevation={0}>
                   <View style={styles.orderHeader}>
                     <Text variant="titleSmall">
                       #{order.id} · {order.status}
                     </Text>
-                    <Text variant="bodySmall" style={styles.muted}>
+                    <Text
+                      variant="bodySmall"
+                      style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                       {order.createdAt ?? ''}
                     </Text>
                   </View>
                   <Divider />
                   <View style={styles.orderBody}>
                     <Text variant="bodyMedium">
-                      {t('account.orders.total', 'Total')}: {formatCurrency(order.total)}
+                      {t('account.orders.total', 'Total')}:{' '}
+                      {formatCurrency(order.total)}
                     </Text>
-                    <Text variant="bodySmall" style={styles.muted}>
+                    <Text
+                      variant="bodySmall"
+                      style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                       {t('account.orders.itemsLabel', 'Items')}:{' '}
                       {order.products.reduce(
                         (sum, product) => sum + product.quantity,
@@ -852,7 +899,9 @@ export const AccountScreen: React.FC = () => {
               ))}
             </View>
           ) : (
-            <Text variant="bodyMedium" style={styles.muted}>
+            <Text
+              variant="bodyMedium"
+              style={[styles.muted, {color: colors.onSurfaceVariant}]}>
               {t('account.orders.empty', 'No orders placed yet.')}
             </Text>
           )}
@@ -924,11 +973,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     gap: 16,
-    backgroundColor: '#f9fafc',
   },
-  muted: {
-    color: '#6b7280',
-  },
+  muted: {},
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -938,7 +984,6 @@ const styles = StyleSheet.create({
   },
   centerSubtext: {
     textAlign: 'center',
-    color: '#6b7280',
   },
   addressHeader: {
     flexDirection: 'row',
@@ -958,7 +1003,6 @@ const styles = StyleSheet.create({
   orderCard: {
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
     gap: 8,
   },
   orderHeader: {

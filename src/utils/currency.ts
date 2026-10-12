@@ -1,7 +1,8 @@
-const formatter = new Intl.NumberFormat('ro-RO', {
-  style: 'currency',
-  currency: 'EUR',
-  minimumFractionDigits: 2,
-});
+import {i18n} from '@/i18n';
 
-export const formatCurrency = (value: number): string => formatter.format(value);
+export const formatCurrency = (value: number): string =>
+  new Intl.NumberFormat(i18n.language || 'en', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+  }).format(value);

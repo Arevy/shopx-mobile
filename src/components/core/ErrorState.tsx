@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button, Text} from 'react-native-paper';
@@ -14,6 +15,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   message,
   onRetry,
 }) => {
+  const {colors} = useTheme();
   const {t} = useAppTranslation('common');
 
   return (
@@ -21,7 +23,9 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
       <Text variant="titleMedium" style={styles.title}>
         {title ?? t('errors.genericTitle')}
       </Text>
-      <Text variant="bodyMedium" style={styles.message}>
+      <Text
+        variant="bodyMedium"
+        style={[styles.message, {color: colors.onSurfaceVariant}]}>
         {message ?? t('errors.genericMessage')}
       </Text>
       {onRetry ? (
@@ -46,6 +50,5 @@ const styles = StyleSheet.create({
   },
   message: {
     textAlign: 'center',
-    color: '#6b7280',
   },
 });

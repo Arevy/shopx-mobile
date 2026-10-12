@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import {Button, Card, Text} from 'react-native-paper';
@@ -11,6 +12,7 @@ import {useGetCmsPagesQuery} from '@/services/graphql/shopxGraphqlApi';
 import type {CmsStackNavigation} from '@/navigation/types';
 
 export const CmsListScreen: React.FC = () => {
+  const {colors} = useTheme();
   const {data, isLoading, error, refetch} = useGetCmsPagesQuery();
   const navigation = useNavigation<CmsStackNavigation>();
   const {t, i18n} = useAppTranslation(['cms', 'common']);
@@ -55,7 +57,9 @@ export const CmsListScreen: React.FC = () => {
               <Card.Title title={item.title} subtitle={updatedLabel} />
               <Card.Content>
                 {item.excerpt ? (
-                  <Text variant="bodyMedium" style={styles.excerpt}>
+                  <Text
+                    variant="bodyMedium"
+                    style={[styles.excerpt, {color: colors.onSurfaceVariant}]}>
                     {item.excerpt}
                   </Text>
                 ) : null}
@@ -77,7 +81,9 @@ export const CmsListScreen: React.FC = () => {
         }}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={() => (
-          <Text variant="bodyMedium" style={styles.empty}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.empty, {color: colors.onSurfaceVariant}]}>
             {t('cms.empty')}
           </Text>
         )}
@@ -98,15 +104,12 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
   },
-  excerpt: {
-    color: '#4b5563',
-  },
+  excerpt: {},
   separator: {
     height: 12,
   },
   empty: {
     textAlign: 'center',
     marginTop: 48,
-    color: '#6b7280',
   },
 });

@@ -5,9 +5,11 @@ import PageHome from '../resources/ro/Page_Home.json';
 
 export const ro = {
   common: {
+    vatIncluded: 'TVA inclus',
     appName: '{{siteName}} Mobile',
     description: 'Experiența completă ShopX direct pe telefon.',
     actions: {
+      loadMore: 'Încarcă mai multe',
       retry: 'Reîncearcă',
       viewProducts: 'Vezi produse',
       goBack: 'Înapoi',
@@ -79,7 +81,10 @@ export const ro = {
     },
   },
   home: {
-    title: 'Descoperă produsele {{siteName}}',
+    eyebrow: 'Tehnologie, casă și lifestyle',
+    intro:
+      'Descoperă tehnologie utilă, obiecte pentru casă și lucrurile mici care fac fiecare zi mai bună.',
+    title: 'Mai bine, zi de zi.',
     searchPlaceholder: 'Caută produse, branduri sau categorii',
     categoriesAll: 'Toate',
     emptyTitle: 'Nu am găsit rezultate',

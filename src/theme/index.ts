@@ -13,20 +13,38 @@ const baseFont = configureFonts({
   },
 });
 
-const primaryColor = '#3f37c9';
-const secondaryColor = '#4cc9f0';
+const primaryColor = '#c8ff5f';
+const secondaryColor = '#b3f04e';
 
 export const lightPaperTheme: MD3Theme = {
   ...MD3LightTheme,
   fonts: baseFont,
   colors: {
     ...MD3LightTheme.colors,
-    primary: primaryColor,
-    secondary: secondaryColor,
-    background: '#f7f7f7',
+    primary: '#416300',
+    secondary: '#4e6350',
+    background: '#f4f5f2',
     surface: '#ffffff',
-    surfaceVariant: '#edf2ff',
-    outline: '#d0d5dd',
+    surfaceVariant: '#e8ece2',
+    outline: '#737b6d',
+    outlineVariant: '#d9dfd1',
+    onPrimary: '#ffffff',
+    onSecondary: '#ffffff',
+    primaryContainer: '#e0efc3',
+    onPrimaryContainer: '#263b00',
+    secondaryContainer: '#e8ece2',
+    onSecondaryContainer: '#34452e',
+    onSurface: '#20251e',
+    onSurfaceVariant: '#56604f',
+    onBackground: '#20251e',
+    elevation: {
+      level0: 'transparent',
+      level1: '#f2f5ec',
+      level2: '#edf1e6',
+      level3: '#e8ece2',
+      level4: '#e2e8d9',
+      level5: '#dbe3d0',
+    },
   },
 };
 
@@ -37,10 +55,27 @@ export const darkPaperTheme: MD3Theme = {
     ...MD3DarkTheme.colors,
     primary: primaryColor,
     secondary: secondaryColor,
-    background: '#0b1026',
-    surface: '#1b213a',
-    surfaceVariant: '#273059',
-    outline: '#3b436c',
+    background: '#101112',
+    surface: '#1a1d20',
+    surfaceVariant: '#222629',
+    outline: '#737d81',
+    onPrimary: '#101112',
+    onSecondary: '#101112',
+    primaryContainer: '#2c3d18',
+    onPrimaryContainer: '#d4ffa0',
+    secondaryContainer: '#303a28',
+    onSecondaryContainer: '#d2e8c2',
+    onSurface: '#f4f5f2',
+    onSurfaceVariant: '#adb5b9',
+    onBackground: '#f4f5f2',
+    elevation: {
+      level0: 'transparent',
+      level1: '#1a1d20',
+      level2: '#222629',
+      level3: '#262c2e',
+      level4: '#2c3335',
+      level5: '#343a3d',
+    },
   },
 };
 
@@ -48,11 +83,11 @@ export const lightNavigationTheme = {
   ...NavigationLightTheme,
   colors: {
     ...NavigationLightTheme.colors,
-    primary: primaryColor,
-    background: '#f7f7f7',
+    primary: '#416300',
+    background: '#f4f5f2',
     card: '#ffffff',
-    border: '#e0e4f0',
-    text: '#1f2a48',
+    border: '#d9dfd1',
+    text: '#20251e',
   },
 };
 
@@ -61,9 +96,9 @@ export const darkNavigationTheme = {
   colors: {
     ...NavigationDarkTheme.colors,
     primary: primaryColor,
-    background: '#0b1026',
-    card: '#1b213a',
-    border: '#273059',
-    text: '#f1f5ff',
+    background: '#101112',
+    card: '#1a1d20',
+    border: '#343a3d',
+    text: '#f4f5f2',
   },
 };
