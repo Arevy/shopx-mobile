@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {TextInput} from 'react-native-paper';
+import {useAppTranslation} from '@/hooks/useAppTranslation';
 
 export type AddressFormValues = {
   street: string;
@@ -23,10 +24,12 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
   onChange,
   disabled = false,
 }) => {
+  const {t} = useAppTranslation('Page_Checkout');
   return (
     <View style={styles.form}>
       <TextInput
-        label="Street"
+        label={t('form.address.fields.street')}
+        accessibilityLabel={t('form.address.fields.street')}
         value={values.street}
         onChangeText={text => onChange('street', text)}
         autoCapitalize="words"
@@ -34,7 +37,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
         disabled={disabled}
       />
       <TextInput
-        label="City"
+        label={t('form.address.fields.city')}
+        accessibilityLabel={t('form.address.fields.city')}
         value={values.city}
         onChangeText={text => onChange('city', text)}
         autoCapitalize="words"
@@ -42,7 +46,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
         disabled={disabled}
       />
       <TextInput
-        label="Postal code"
+        label={t('form.address.fields.postal_code')}
+        accessibilityLabel={t('form.address.fields.postal_code')}
         value={values.postalCode}
         onChangeText={text => onChange('postalCode', text)}
         autoCapitalize="characters"
@@ -50,7 +55,8 @@ export const AddressFormFields: React.FC<AddressFormFieldsProps> = ({
         disabled={disabled}
       />
       <TextInput
-        label="Country"
+        label={t('form.address.fields.country')}
+        accessibilityLabel={t('form.address.fields.country')}
         value={values.country}
         onChangeText={text => onChange('country', text)}
         autoCapitalize="words"

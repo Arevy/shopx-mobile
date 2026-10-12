@@ -1,4 +1,5 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
+require_relative 'fmt_compatibility'
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
@@ -33,6 +34,7 @@ target 'shopxMobile' do
   end
 
   post_install do |installer|
+    patch_fmt_string_view(installer.sandbox.root.to_s)
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
@@ -40,5 +42,17 @@ target 'shopxMobile' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Resource/privacy bundles in older dependencies can retain iOS 9 targets.
+    # Keep every pod target at least at React Native's supported minimum.
+    minimum_ios = Gem::Version.new(min_ios_version_supported)
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |configuration|
+        deployment_target = configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if deployment_target.nil? || (deployment_target.match?(/\A\d+(\.\d+)*\z/) && Gem::Version.new(deployment_target) < minimum_ios)
+          configuration.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = minimum_ios.to_s
+        end
+      end
+    end
   end
 end

@@ -9,6 +9,7 @@ import {
   REHYDRATE,
   persistReducer,
   persistStore,
+  createMigrate,
 } from 'redux-persist';
 
 import {shopxGraphqlApi} from '@/services/graphql/shopxGraphqlApi';
@@ -16,6 +17,7 @@ import {cartReducer} from '@/store/slices/cartSlice';
 import {sessionReducer} from '@/store/slices/sessionSlice';
 import {uiReducer} from '@/store/slices/uiSlice';
 import {wishlistReducer} from '@/store/slices/wishlistSlice';
+import {restoreWishlistItems} from '@/store/wishlistPersistence';
 import {ordersReducer} from '@/store/slices/ordersSlice';
 
 const sessionPersistConfig = {
@@ -31,6 +33,13 @@ const cartPersistConfig = {
 const wishlistPersistConfig = {
   key: 'wishlist',
   storage: AsyncStorage,
+  version: 1,
+  migrate: createMigrate({
+    1: state => state ? {
+      ...state,
+      items: restoreWishlistItems((state as unknown as {items?: unknown}).items),
+    } : state,
+  }),
 };
 
 const uiPersistConfig = {
@@ -44,7 +53,7 @@ const rootReducer = combineReducers({
   cart: persistReducer(cartPersistConfig, cartReducer),
   wishlist: persistReducer(wishlistPersistConfig, wishlistReducer),
   ui: persistReducer(uiPersistConfig, uiReducer),
-  orders: ordersReducer,
+  orders: persistReducer({key: 'orders', storage: AsyncStorage, whitelist: ['pendingCheckout']}, ordersReducer),
   [shopxGraphqlApi.reducerPath]: shopxGraphqlApi.reducer,
 });
 

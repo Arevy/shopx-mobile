@@ -1,68 +1,69 @@
-# ShopX Mobile Feature Parity Plan
+# ShopX mobile feature parity plan
 
-This document captures the plan for bringing the React Native app (`shopx-mobile`) to feature parity with the web storefront (`shopx-frontend`). It focuses on UX scope, data requirements, Redux wiring, and platform polish priorities.
+Reviewed against current source on October 11, 2026. This plan compares `shopx-mobile` with `shopx-frontend`, retains the original UX/data direction, and separates implemented behavior from proposals. Complete parity is not yet verified. See the [RN README](../README.md) for setup and the [workspace record](../../docs/development-status.md) for test evidence.
 
 ## Goals
-- Deliver every customer-facing flow that exists on web: browse, search/filter, authentication, CMS, wishlist, cart, checkout, orders, profile management.
-- Share a consistent visual language across native, web, and desktop builds (iconography, typography, elevated surfaces, spacing).
-- Reuse the GraphQL schema and business rules from the backend while preserving offline/mock support.
-- Ensure flows are testable (mock GraphQL) and documented for onboarding.
 
-## Feature Matrix (Web vs Mobile)
-| Flow | Web capabilities (`shopx-frontend`) | Current mobile state | Next steps (data & UI) |
+- Cover customer flows available in the storefront: browsing, search/filtering, authentication, CMS, wishlist, cart, checkout, orders, and profile management.
+- Maintain a consistent visual language across native, web, and desktop: iconography, typography, surfaces, and spacing.
+- Use real backend GraphQL data and business rules. Runtime mock/offline commerce fallbacks were removed at the user's request; do not reintroduce them.
+- Test failure and recovery paths. Isolated test doubles/fixtures are acceptable in tests, but are not application data or proof of backend integration.
+
+## Feature matrix
+
+| Flow | Storefront reference | Current RN implementation | Remaining work or verification |
 | --- | --- | --- | --- |
-| **Authentication** | Login, register, impersonation token, persisted session | Login/Register drafted in `AccountScreen`, missing impersonation + error toasts | Wire `redeemImpersonation` modal, add consistent toast feedback, persist auth metrics |
-| **Catalog & Search** | Category navigation, keyword search, product detail with reviews | Home screen shows featured products; missing search & review list | Add search bar & filter drawer, hydrate reviews via `GET_PRODUCT_DETAIL` |
-| **Wishlist** | Full CRUD with optimistic updates | Present but lacks empty/error states refresh | Align UI with Paper cards, add pull-to-refresh & toast feedback |
-| **Cart** | Guest cart, quantity adjust, remove, clear, summary | Implemented with RTK Query; negative quantity mutation unverified | Confirm backend supports negative deltas (otherwise add `updateCartQuantity` mutation) |
-| **Checkout** | Address book, payment method choice, order placement | `CheckoutScreen` scaffolded; needs validation, toasts, responsive layout | Finalize GraphQL integrations, handle errors, add placed-order deep link |
-| **Orders** | Order history with totals and status badges | Orders slice created; UI shows list without status colors | Add status chips, skeleton states, pagination support when backend adds it |
-| **Profile** | Update profile, change password, saved addresses, theme preference | UI in place but missing error surfacing & locale strings | Integrate toast system, add pull-to-refresh, ensure theme preference syncs with persisted UI slice |
-| **CMS Pages** | Static pages accessible from nav + deep links | Drawer links to CMS stacks; detail screen present | Add hero illustration, shareable link button, skeleton while loading |
-| **Checkout CMS** | Shipping, returns, etc. | Linked through CMS stack but not surfaced in checkout | Add contextual CTA linking to shipping/returns within checkout summary |
-| **Server Services** | Optional REST bridge for server-side operations | Config toggles exist via `env.USE_SERVER_SERVICES` | Add toggle in developer settings screen + documentation |
-| **Impersonation** | Admin token link to assume user identity | Not surfaced | Add hidden dev-only screen triggered from debug menu |
+| Authentication | Login, registration, persisted identity, session refresh | Account login/register/logout and Bearer sessions | Broader expired-session/error UX tests; consistent cross-platform feedback |
+| Catalog/search | Categories, search, product details, reviews | Debounced search, category filtering, detail screen, and review list | Audit filter parity, pagination expectations, responsive layouts, and review actions supported by the storefront |
+| Wishlist | Guest/server data and synchronization | Backend operations, loading/error/empty states, retry, persisted-shape migration | Compare guest behavior and refresh UX; test switching accounts |
+| Cart | Guest cart, quantity changes, remove/clear, summary | Authenticated RTK Query operations and Redux state; negative deltas supported by backend | Guest-cart parity, rapid repeated taps, refresh feedback, and concurrency tests |
+| Checkout | Profile address selection/creation, method selection, order/payment | Integrated backend calls, validation/error state, persisted known order for payment retry | Order address snapshot, lost order-creation response, full device flow, and order-detail navigation |
+| Orders | History and totals/status | Account order list and Redux orders slice | Richer status presentation, order detail, and pagination when customer API supports it |
+| Profile | Profile/password changes and address book | Profile/password updates with inline feedback, address creation/list | Compare address edit/delete, refresh behavior, and all validation/error paths |
+| CMS | Published content routes/navigation | CMS list/detail and drawer entry | Verify external deep links, optional sharing, loading polish, and contextual shipping/returns links in checkout |
+| Settings | Language and presentation preferences | Persisted language/theme; six language packs with commerce strings | Human translation review, complete RTL behavior, accessibility |
+| Server services | Optional Next.js proxy | Configuration via `USE_SERVER_SERVICES`; development webpack proxy | Keep endpoint ownership clear; a developer UI toggle is only a proposal |
+| Impersonation | Storefront `/impersonate` redeems a SUPPORT-issued ticket | No RN impersonation flow is exposed | Decide whether RN needs it; validate ticket/session behavior and authorization before adding navigation |
 
-## Data & Redux Architecture
-- **RTK Query endpoints** already cover the core operations. Remaining tasks:
-  - Ensure every mutation updates local cache or dispatches matching slice reducers (`orders`, `cart`, `wishlist`, `session`).
-  - Remove legacy mock fallbacks; surface backend errors with actionable UI feedback and retry affordances.
-  - Define a lightweight contract test suite (recorded GraphQL fixtures) to validate client assumptions without bundling mock state.
-- **Redux slices**:
-  - `ordersSlice`: decide whether to persist (likely no, treat as server source of truth). Provide selectors for list, lastUpdated.
-  - Evaluate splitting authentication into `session` (token/user) and `account` (context, addresses, orders) slices for clearer caching.
-  - Add UI slice properties for global toasts, loading overlays, and feature flags (search enabled, checkout experimental, etc.).
-- **Navigation**:
-  - `Cart` is a stack housing `CartHome` + `Checkout`; ensure linking config maps drawer quick link to `HomeTabs > Cart > Checkout`.
-  - Introduce a modal stack for impersonation/login fallback to mirror web route transitions.
+## Data and Redux decisions
 
-## UI / UX Guidelines
-- Adopt Material 3 spacing and elevations from the shared theme (`theme/tokens`). Keep primary/secondary colors aligned with web tokens.
-- Use `react-native-vector-icons/Feather` + `MaterialCommunityIcons` and rely on the module-provided fonts (pods/Gradle handle mobile; `web/index.tsx` injects them for the web shell).
-- Build reusable form building blocks:
-  - `AddressFormFields` (present) → add locale-driven labels, validation helper text.
-  - Authentication inputs with `TextInput.Icon` for visibility toggle.
-  - `SummaryRow`, `StatusChip` components for checkout/orders.
-- Accessibility: define `accessibilityLabel`/`accessibilityRole` for interactive elements, respect dynamic font sizes, provide focus outlines on web.
-- Animations: leverage `react-native-reanimated` for bottom tab transitions and checkout success states; keep subtle to avoid perf hits.
+- [shopxGraphqlApi.ts](../src/services/graphql/shopxGraphqlApi.ts) handles real backend operations and session headers. Mutations must invalidate/refetch their associated data or update the matching slices; keep the backend authoritative.
+- `getWishlist` returns `{userId, products}`. API normalization and the version-1 persistence migration restore an array, including old/corrupt persisted shapes.
+- Session, cart, wishlist, and UI preferences are persisted. Only `orders.pendingCheckout` is persisted; order history and RTK Query cache are not. This supersedes the earlier open question about persisting the entire orders slice.
+- `addToCart` accepts negative deltas. The SQL test suite exercises the real `MERGE`, including removal at zero. The earlier uncertainty about decrement support is resolved.
+- RN checkout retains a known order after payment failure. Matching PENDING payment retries reuse that record. A lost order-creation response remains a separate idempotency gap.
+- Consider splitting account context from session state only if actual complexity warrants it. Global toasts/loading overlays/feature flags remain design options, not implemented requirements.
+- Keep contract tests separate from runtime bundles. Never silently replace a backend error with mock success.
 
-## Testing & QA Strategy
-- Add integration tests (Jest + React Native Testing Library) for checkout and account flows using RTK Query's `setupListeners` with fixture-based responses.
-- E2E smoke tests (Detox) covering login -> browse -> add to cart -> checkout -> view orders against a seeded backend or local fixture server.
-- Snapshot coverage for navigation drawers and checkout summary to detect layout regressions.
+## Navigation and UI direction
 
-## Documentation Updates
-- Extend `README.md` “Running the app” with troubleshooting for Xcode’s Ruby requirement (`chruby` fix) and icon font linking steps (already noted).
-- Document backend port expectations (`GRAPHQL_ENDPOINT` vs dev proxy) and how to align Android reverse tunnel commands.
-- Provide onboarding checklist in `/docs/onboarding.md` (pending) referencing this parity roadmap.
+[Navigation types](../src/navigation/types.ts) define `HomeTabs > Cart > Checkout`, with `CartHome` and `Checkout` in the cart stack. Verify drawer entry and return paths against those names. There is no completed external-link mapping to treat as verified; add linking configuration and tests if that flow is introduced. A login/impersonation modal is a proposal, not an existing route.
 
-## Open Questions / Risks
-- Backend API contract for cart quantity decrements (negative delta) needs confirmation.
-- Do we persist orders locally or always refetch? (Impact on offline experience.)
-- Impersonation support on mobile: should it live behind a dev flag or user-accessible?
-- Payment methods beyond `CARD`/`TRANSFER`/`CASH` (Apple Pay / Google Pay) require native modules—out of scope for parity but note as enhancement.
+Use the existing [theme](../src/theme) and shared forms/components for spacing, typography, and surfaces. Keep Feather/MaterialCommunityIcons aligned with the font integration in native projects and `web/index.tsx`.
 
-## Next Milestones
-1. Finalize data flow decisions (cart decrement mutation, orders caching) and extend mocks.
-2. Implement remaining UI polish (icons, skeleton loaders, error toasts).
-3. Add automated tests & documentation per sections above.
+[AddressFormFields](../src/components/forms/AddressFormFields.tsx) and account inputs already provide reusable form foundations. Extend locale-based validation and feedback; consider shared summary/status components where they remove duplication. Account/profile errors are surfaced today, so remaining work is consistency and coverage rather than adding error handling from scratch.
+
+Accessibility work should cover meaningful labels/roles, text scaling, keyboard focus on web, contrast, and RTL. Optional skeletons, CMS illustrations/sharing, subtle navigation animations, and checkout success transitions should follow functional correctness and measured performance. Do not treat those proposals as existing UI features.
+
+## Testing and QA
+
+Current automated coverage uses `node --test`: nine checks for wishlist persistence, translation keys, and icon names. Workspace browser checks previously exercised account/checkout on a real `SHOPX_LOCAL` backend with temporary QA records. Recovered `AREVY` and Compose checks used public read-only queries; they do not prove all customer flows.
+
+Remaining coverage:
+
+1. Meaningful account/checkout component tests, including server errors and payment retry. Select a React Native Testing Library version compatible with the installed React/RN setup; the existing package dependency is not an operational test suite.
+2. Navigation tests for cart/checkout and any newly added deep links; targeted visual checks for drawer/summary layouts rather than snapshots that only mirror markup.
+3. Real-device flows: login → browse → cart → checkout → order history, against a dedicated test backend. A device automation tool such as Detox is a proposal, not a configured runner.
+4. Rapid cart taps, session revocation, account switching, malformed persisted data, responsive web/Electron layouts, and complete RTL/accessibility review.
+
+## Documentation and open decisions
+
+The README now covers Ruby manager conflicts, CocoaPods/CLI compatibility, font duplication, web fonts, GraphQL proxy ownership, and Android reverse ports. It is the onboarding entrypoint; a separate `docs/onboarding.md` has not been created. Keep links to it out of setup instructions until it exists.
+
+Decide whether support impersonation belongs in RN and how to expose it without weakening authorization. Customer-facing order pagination and stronger offline behavior depend on backend/product decisions. Apple Pay/Google Pay and other payment methods require provider/native integration and remain enhancements beyond current `CARD`/`TRANSFER`/`CASH` registration.
+
+## Next milestones
+
+1. Complete the remaining feature comparison and prioritize guest flows, address management, and checkout contract gaps.
+2. Improve responsive UI, status/loading feedback, translations, and accessibility using existing components.
+3. Add meaningful component/navigation/device coverage and update the verification record with the actual environment and scope tested.

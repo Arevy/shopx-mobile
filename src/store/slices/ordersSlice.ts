@@ -6,6 +6,7 @@ import type {Order} from '@/types/order';
 export type OrdersState = {
   list: Order[];
   lastUpdatedAt?: string;
+  pendingCheckout?: Order;
 };
 
 const initialState: OrdersState = {
@@ -24,9 +25,13 @@ const ordersSlice = createSlice({
     clearOrders(state) {
       state.list = [];
       state.lastUpdatedAt = undefined;
+      state.pendingCheckout = undefined;
+    },
+    setPendingCheckout(state, action: PayloadAction<Order | undefined>) {
+      state.pendingCheckout = action.payload;
     },
   },
 });
 
-export const {setOrders, clearOrders} = ordersSlice.actions;
+export const {setOrders, clearOrders, setPendingCheckout} = ordersSlice.actions;
 export const ordersReducer = ordersSlice.reducer;

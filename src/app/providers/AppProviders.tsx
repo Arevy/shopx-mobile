@@ -34,7 +34,6 @@ const logFontError =
       (typeof __DEV__ !== 'undefined' && __DEV__) ||
       process.env.NODE_ENV !== 'production';
     if (inDev) {
-      // eslint-disable-next-line no-console
       console.warn(`[icons] Failed to load ${family} font`, error);
     }
   };
@@ -61,7 +60,7 @@ const ThemedProviders: React.FC<AppProvidersProps> = ({children}) => {
 
   return (
     <I18nextProvider i18n={i18n}>
-      <PaperProvider theme={paperTheme}>
+      <PaperProvider theme={paperTheme} settings={paperSettings}>
         <NavigationContainer
           theme={navigationTheme}
           documentTitle={{formatter: (_, route) => `${env.SITE_NAME} · ${route?.name ?? ''}`}}>
@@ -72,6 +71,13 @@ const ThemedProviders: React.FC<AppProvidersProps> = ({children}) => {
       </PaperProvider>
     </I18nextProvider>
   );
+};
+
+const paperSettings = {
+  icon: ({name, color, size}: {name: string; color?: string; size: number}) => {
+    const Icon = FeatherIcon.hasIcon(name) ? FeatherIcon : MaterialCommunityIcons;
+    return <Icon name={name} color={color} size={size} />;
+  },
 };
 
 export const AppProviders: React.FC<AppProvidersProps> = ({children}) => {

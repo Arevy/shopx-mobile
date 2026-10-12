@@ -1,0 +1,58 @@
+# Standalone development: no parent checkout or sibling repository is required.
+# Supply external service connections with --env-file .env.docker.
+name: shopx-web-standalone
+
+services:
+  web:
+    image: shopx-mobile-dev:local
+    build: {context: ., target: development}
+    init: true
+    restart: unless-stopped
+    mem_limit: ${APP_MEMORY_LIMIT:-1024m}
+    cpus: ${APP_CPUS:-2}
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    ports: ["${BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-8083}:8083"]
+    environment:
+      NODE_ENV: "development"
+      NODE_OPTIONS: "--max-old-space-size=640"
+      WEB_HOST: "0.0.0.0"
+      WEB_PORT: "8083"
+      GRAPHQL_ENDPOINT: "${GRAPHQL_ENDPOINT:-http://host.docker.internal:4000/graphql}"
+      SITE_NAME: "${SITE_NAME:-ShopX}"
+      USE_SERVER_SERVICES: "false"
+    volumes:
+      - ./src:/app/src:ro
+      - ./web:/app/web:ro
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8083').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 90s
+
+  metro:
+    profiles: [native]
+    image: shopx-mobile-dev:local
+    build: {context: ., target: development}
+    init: true
+    restart: unless-stopped
+    mem_limit: ${METRO_MEMORY_LIMIT:-1024m}
+    cpus: ${METRO_CPUS:-2}
+    environment:
+      NODE_OPTIONS: --max-old-space-size=640
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+    command: [yarn, start, --host, 0.0.0.0, --port, "8081", --no-interactive, --max-workers, "2"]
+    ports: ["${BIND_ADDRESS:-127.0.0.1}:${METRO_PORT:-8081}:8081"]
+    volumes:
+      - ./src:/app/src:ro
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8081/status').then(async r=>{if(!r.ok||!(await r.text()).includes('packager-status:running'))process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 90s

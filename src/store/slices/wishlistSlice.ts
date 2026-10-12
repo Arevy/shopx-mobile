@@ -2,6 +2,7 @@ import {createSlice} from '@reduxjs/toolkit';
 import type {PayloadAction} from '@reduxjs/toolkit';
 
 import type {Product} from '@/types/product';
+import {restoreWishlistItems} from '@/store/wishlistPersistence';
 
 export type WishlistState = {
   items: Product[];
@@ -16,7 +17,7 @@ const wishlistSlice = createSlice({
   initialState,
   reducers: {
     setWishlist(state, action: PayloadAction<Product[]>) {
-      state.items = action.payload;
+      state.items = restoreWishlistItems(action.payload);
     },
     addToWishlist(state, action: PayloadAction<Product>) {
       const alreadyInWishlist = state.items.some(
