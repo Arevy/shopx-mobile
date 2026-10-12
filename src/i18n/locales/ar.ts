@@ -9,10 +9,19 @@ export const ar = {
   ...en,
   common: {
     ...en.common,
+    vatIncluded: 'شامل الضريبة',
+    actions: {...en.common.actions, loadMore: 'عرض المزيد'},
     language: {
       ...en.common.language,
       options: Common.language.options,
     },
+  },
+  home: {
+    ...en.home,
+    title: 'كل يوم، أفضل.',
+    eyebrow: 'تقنية ومنزل وأسلوب حياة',
+    intro:
+      'اكتشف تقنيات مفيدة ومستلزمات منزلية مدروسة والتفاصيل الصغيرة التي تجعل كل يوم أفضل.',
   },
   Common,
   Page_Account: PageAccount,

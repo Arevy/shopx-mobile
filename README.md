@@ -58,6 +58,14 @@ Compose builds one Linux image shared by webpack and Metro. Both mount `src/`; t
 
 During Compose verification on October 11, 2026, RN web loaded the catalog through `mobile.shopx.localhost` without uncaught JavaScript exceptions. Metro generated the iOS bundle with HTTP 200; a new native build was not needed for that server check. Metro runs non-interactively with two workers; automatic DevTools opening from the container was not verified.
 
+## Catalog and visual identity
+
+The app shares the graphite/lime identity with the storefront and admin. [Theme tokens](src/theme/index.ts) provide coordinated Paper/navigation colors; a new profile starts in dark mode, while existing saved light/system preferences remain intact. Theme-aware text, forms and surfaces also cover account, checkout, CMS, wishlist and product details.
+
+The catalog renders one to four columns according to available width, with complete product photos on a white stage, accessible wishlist actions, translated VAT labels and locale-aware EUR prices. Search retains focus while results update. **Load more** retrieves additional real backend products beyond the initial 24; there is no replacement mock catalog. The same components serve native, web and Electron.
+
+The backend owns product imagery, descriptions and dated VAT-inclusive retail reference prices. Its explicit catalog importer preserves commerce history. Existing order/payment amounts have not been converted from another currency. Theme and client code remain local to this repository so it can run independently.
+
 ## Configuration
 
 For a new checkout, copy `.env.example` to `.env` only if `.env` does not already exist. Basic local settings:
@@ -189,6 +197,7 @@ Use the existing [theme](src/theme), reusable components, navigation types, and 
 - For squares on web, check font requests/loading and the glyph name. A successful build or DOM render alone does not establish that icons display.
 - For `Electron ENOENT`, `npm rebuild electron` restores the installed version's binary.
 - For a confirmed stale Metro cache, restart with `npm start -- --reset-cache`. Normal startup does not require deleting Pods/build/cache directories.
+- If iOS shows product text but blank images in local Compose development, inspect the image URL. `resolveImageUrl` maps backend `/products/:id/image` URLs on `*.localhost` to the configured native GraphQL origin in development, retaining version queries. This avoids ATS rejecting the browser-facing alias. Browser, external CDN and release URLs are unchanged; production needs a reachable HTTPS asset origin.
 - For backend failures, first check `http://localhost:4000/health/ready`, then the platform's endpoint and ADB/proxy ports.
 
 ## Checks and distribution
@@ -196,15 +205,15 @@ Use the existing [theme](src/theme), reusable components, navigation types, and 
 | Command | Scope |
 | --- | --- |
 | `npm run typecheck` | TypeScript without a build |
-| `npm test` | Nine tests: wishlist migration/validation, static keys in six languages, and static icon names |
+| `npm test` | 12 tests: wishlist migration/validation, six-language keys, icon names and platform image URLs |
 | `npm run test:watch` | The same Node tests in watch mode |
 | `npm run lint` | ESLint, allowing no warnings |
 | `npm run prettier` | Prettier check for `src/` |
 | `npm run lint:fix`, `npm run prettier:fix` | Apply code/formatting changes |
 
-On October 12, 2026, all nine tests and TypeScript passed again. The earlier lint check reported the unused `Product` import in `HomeScreen.tsx`; that remains unresolved. Tests run with `node --test`, not Jest/RNTL, even though those packages are dependencies.
+On October 12, 2026, all 12 tests and TypeScript passed again. The unused `Product` import was removed, and ESLint now passes without warnings. Tests run with `node --test`, not Jest/RNTL, even though those packages are dependencies.
 
-Workspace `../scripts/browser-smoke.cjs` checks RN web in Chrome; `../scripts/desktop-smoke.cjs` opens Electron against port 8083 using a temporary profile. Checkout smoke tests require valid SUPPORT credentials and create QA data. API smoke and all four starter-account checks pass against recovered `AREVY`, including the RN web proxy. Chrome also passed login, wishlist/reload, both icon fonts and retry after a lost payment response without creating a second order. The [workspace verification record](../docs/development-status.md) separates current Chrome evidence from earlier Electron/native checks; browser/API results do not establish physical-device behavior.
+Workspace `../scripts/browser-smoke.cjs` checks RN web in Chrome; `../scripts/desktop-smoke.cjs` opens Electron against port 8083 using a temporary profile. Checkout smoke tests require valid SUPPORT credentials and create QA data. API smoke and all four starter-account checks pass against recovered `AREVY`, including the RN web proxy. Chrome also passed login, wishlist/reload, both icon fonts and retry after a lost payment response without creating a second order. The [workspace verification record](../docs/development-status.md) records current Chrome, Electron and iOS simulator checks separately; browser/API results do not establish physical-device behavior.
 
 ### Release build commands
 

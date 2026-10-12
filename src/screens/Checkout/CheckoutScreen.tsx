@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React, {useEffect, useMemo, useState} from 'react';
 import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 import {
@@ -22,7 +23,10 @@ import {
   useGetAddressesQuery,
   useGetOrdersQuery,
 } from '@/services/graphql/shopxGraphqlApi';
-import type {CartStackNavigation, RootDrawerNavigation} from '@/navigation/types';
+import type {
+  CartStackNavigation,
+  RootDrawerNavigation,
+} from '@/navigation/types';
 import {useAppTranslation} from '@/hooks/useAppTranslation';
 import {setOrders, setPendingCheckout} from '@/store/slices/ordersSlice';
 
@@ -36,6 +40,7 @@ const defaultAddressForm: AddressFormValues = {
 };
 
 export const CheckoutScreen: React.FC = () => {
+  const {colors} = useTheme();
   const {t} = useAppTranslation(['checkout', 'common', 'cart']);
   const navigation = useNavigation<CartStackNavigation>();
   const drawerNavigation = useNavigation<RootDrawerNavigation>();
@@ -45,13 +50,13 @@ export const CheckoutScreen: React.FC = () => {
 
   const userId = session.user?.id;
   const pendingCheckout = useAppSelector(state => state.orders.pendingCheckout);
-  const pendingOrder = pendingCheckout?.userId === userId ? pendingCheckout : undefined;
+  const pendingOrder =
+    pendingCheckout?.userId === userId ? pendingCheckout : undefined;
   const isAuthenticated = Boolean(userId);
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
-  const [addressForm, setAddressForm] = useState<AddressFormValues>(
-    defaultAddressForm,
-  );
+  const [addressForm, setAddressForm] =
+    useState<AddressFormValues>(defaultAddressForm);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>('CARD');
   const [orderCompletedId, setOrderCompletedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +153,10 @@ export const CheckoutScreen: React.FC = () => {
     if (!hasItems && !pendingOrder) {
       Alert.alert(
         t('checkout.empty.title', 'Your cart is empty'),
-        t('checkout.empty.subtitle', 'Add products to the cart before checkout.'),
+        t(
+          'checkout.empty.subtitle',
+          'Add products to the cart before checkout.',
+        ),
       );
       return;
     }
@@ -179,14 +187,16 @@ export const CheckoutScreen: React.FC = () => {
         await refetchAddresses();
       }
 
-      const order = pendingOrder ?? await createOrder({
-        userId: userId!,
-        products: cartItems.map(item => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-          price: item.product.price,
-        })),
-      }).unwrap();
+      const order =
+        pendingOrder ??
+        (await createOrder({
+          userId: userId!,
+          products: cartItems.map(item => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+            price: item.product.price,
+          })),
+        }).unwrap());
       dispatch(setPendingCheckout(order));
 
       await createPayment({
@@ -220,7 +230,9 @@ export const CheckoutScreen: React.FC = () => {
           <Text variant="headlineSmall">
             {t('checkout.guard.title', 'Sign in required')}
           </Text>
-          <Text variant="bodyMedium" style={styles.muted}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.muted, {color: colors.onSurfaceVariant}]}>
             {t(
               'checkout.guard.subtitle',
               'Sign in to use saved addresses, your wishlist, and to track orders.',
@@ -256,7 +268,9 @@ export const CheckoutScreen: React.FC = () => {
           <Text variant="headlineSmall">
             {t('checkout.success.title', 'Order placed successfully')}
           </Text>
-          <Text variant="bodyMedium" style={styles.muted}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.muted, {color: colors.onSurfaceVariant}]}>
             {t(
               'checkout.success.subtitle',
               'Thank you for your purchase. You can view the order in your account.',
@@ -296,7 +310,9 @@ export const CheckoutScreen: React.FC = () => {
           <Text variant="headlineSmall">
             {t('checkout.intro.title', 'Checkout')}
           </Text>
-          <Text variant="bodyMedium" style={styles.muted}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.muted, {color: colors.onSurfaceVariant}]}>
             {t(
               'checkout.intro.subtitle',
               'Confirm your delivery details and preferred payment method.',
@@ -325,10 +341,7 @@ export const CheckoutScreen: React.FC = () => {
                 />
               ))}
               <RadioButton.Item
-                label={t(
-                  'checkout.address.new',
-                  'Use a different address',
-                )}
+                label={t('checkout.address.new', 'Use a different address')}
                 value="new"
                 mode="android"
               />
@@ -350,9 +363,7 @@ export const CheckoutScreen: React.FC = () => {
           </Text>
           <SegmentedButtons
             value={paymentMethod}
-            onValueChange={value =>
-              setPaymentMethod(value as PaymentMethodId)
-            }
+            onValueChange={value => setPaymentMethod(value as PaymentMethodId)}
             buttons={paymentOptions.map(option => ({
               value: option.value,
               label: option.label,
@@ -365,12 +376,18 @@ export const CheckoutScreen: React.FC = () => {
           <Text variant="titleMedium">
             {t('checkout.summary.heading', 'Order summary')}
           </Text>
-          {pendingOrder ? <Text>{t('checkout.success.orderNumber')}: {pendingOrder.id}</Text> : null}
+          {pendingOrder ? (
+            <Text>
+              {t('checkout.success.orderNumber')}: {pendingOrder.id}
+            </Text>
+          ) : null}
           {(pendingOrder ? [] : cartItems).map(item => (
             <View key={item.product.id} style={styles.summaryRow}>
               <View style={styles.summaryText}>
                 <Text variant="bodyMedium">{item.product.name}</Text>
-                <Text variant="bodySmall" style={styles.muted}>
+                <Text
+                  variant="bodySmall"
+                  style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                   {t('cart.labels.quantity', {
                     value: item.quantity,
                   })}
@@ -382,9 +399,7 @@ export const CheckoutScreen: React.FC = () => {
             </View>
           ))}
           <View style={styles.summaryTotal}>
-            <Text variant="titleMedium">
-              {t('cart.totalLabel', 'Total')}
-            </Text>
+            <Text variant="titleMedium">{t('cart.totalLabel', 'Total')}</Text>
             <Text variant="titleMedium">
               {formatCurrency(pendingOrder?.total ?? cart.total)}
             </Text>
@@ -405,7 +420,9 @@ export const CheckoutScreen: React.FC = () => {
           disabled={isBusy || addressesLoading}>
           {isBusy
             ? t('checkout.actions.processing', 'Placing order…')
-            : pendingOrder ? t('common.actions.retry') : t('checkout.actions.submit', 'Place order')}
+            : pendingOrder
+              ? t('common.actions.retry')
+              : t('checkout.actions.submit', 'Place order')}
         </Button>
         <Button
           mode="text"
@@ -431,9 +448,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 16,
   },
-  muted: {
-    color: '#6b7280',
-  },
+  muted: {},
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

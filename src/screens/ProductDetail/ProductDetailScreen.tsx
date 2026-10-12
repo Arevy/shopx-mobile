@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React, {useMemo, useState} from 'react';
 import {Alert, Image, StyleSheet, View} from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
@@ -22,13 +23,14 @@ import {resolveImageUrl} from '@/utils/images';
 type ProductDetailRoute = RouteProp<HomeStackParamList, 'ProductDetail'>;
 
 export const ProductDetailScreen: React.FC = () => {
+  const {colors} = useTheme();
   const navigation = useNavigation();
   const route = useRoute<ProductDetailRoute>();
   const session = useAppSelector(state => state.session);
   const wishlistItems = useAppSelector(state => state.wishlist.items);
-  const [activeMutation, setActiveMutation] = useState<'cart' | 'wishlist' | null>(
-    null,
-  );
+  const [activeMutation, setActiveMutation] = useState<
+    'cart' | 'wishlist' | null
+  >(null);
   const {t, i18n} = useAppTranslation(['product', 'common']);
 
   const {data, isLoading, error, refetch} = useGetProductDetailQuery({
@@ -46,9 +48,10 @@ export const ProductDetailScreen: React.FC = () => {
     ? wishlistItems.some(item => item.id === product.id)
     : false;
 
-  const productImage = useMemo(() => resolveImageUrl(product?.image?.url), [
-    product?.image?.url,
-  ]);
+  const productImage = useMemo(
+    () => resolveImageUrl(product?.image?.url),
+    [product?.image?.url],
+  );
 
   const ensureAuthenticated = () => {
     if (!session?.token || !session.user?.id) {
@@ -125,7 +128,12 @@ export const ProductDetailScreen: React.FC = () => {
         {t('product.back')}
       </Button>
       {productImage ? (
-        <Image source={{uri: productImage}} style={styles.image} />
+        <Image
+          source={{uri: productImage}}
+          resizeMode="contain"
+          style={styles.image}
+          accessibilityLabel={product.name}
+        />
       ) : null}
       <Text variant="headlineSmall" style={styles.title}>
         {product.name}
@@ -134,7 +142,9 @@ export const ProductDetailScreen: React.FC = () => {
         {formatCurrency(product.price)}
       </Text>
       {product.description ? (
-        <Text variant="bodyLarge" style={styles.description}>
+        <Text
+          variant="bodyLarge"
+          style={[styles.description, {color: colors.onSurfaceVariant}]}>
           {product.description}
         </Text>
       ) : null}
@@ -157,7 +167,9 @@ export const ProductDetailScreen: React.FC = () => {
         {t('product.reviewsTitle', {count: reviews.length})}
       </Text>
       {reviews.length === 0 ? (
-        <Text variant="bodyMedium" style={styles.muted}>
+        <Text
+          variant="bodyMedium"
+          style={[styles.muted, {color: colors.onSurfaceVariant}]}>
           {t('product.reviewsEmpty')}
         </Text>
       ) : (
@@ -166,7 +178,12 @@ export const ProductDetailScreen: React.FC = () => {
             i18n.language,
           );
           return (
-            <View key={review.id} style={styles.reviewCard}>
+            <View
+              key={review.id}
+              style={[
+                styles.reviewCard,
+                {backgroundColor: colors.surfaceVariant},
+              ]}>
               <View style={styles.reviewHeader}>
                 <Text variant="titleSmall">
                   {t('product.reviewUser', {id: review.userId})}
@@ -176,11 +193,15 @@ export const ProductDetailScreen: React.FC = () => {
                 </Chip>
               </View>
               {review.reviewText ? (
-                <Text variant="bodyMedium" style={styles.reviewText}>
+                <Text
+                  variant="bodyMedium"
+                  style={[styles.reviewText, {color: colors.onSurfaceVariant}]}>
                   {review.reviewText}
                 </Text>
               ) : null}
-              <Text variant="bodySmall" style={styles.reviewDate}>
+              <Text
+                variant="bodySmall"
+                style={[styles.reviewDate, {color: colors.onSurfaceVariant}]}>
                 {displayDate}
               </Text>
             </View>
@@ -198,7 +219,8 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 320,
+    height: 360,
+    backgroundColor: '#ffffff',
     borderRadius: 16,
   },
   title: {
@@ -207,11 +229,10 @@ const styles = StyleSheet.create({
   price: {
     fontWeight: '600',
   },
-  description: {
-    color: '#4b5563',
-  },
+  description: {},
   actions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   divider: {
@@ -220,13 +241,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: '600',
   },
-  muted: {
-    color: '#6b7280',
-  },
+  muted: {},
   reviewCard: {
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#f3f4f6',
     gap: 8,
   },
   reviewHeader: {
@@ -234,11 +252,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  reviewText: {
-    color: '#4b5563',
-  },
+  reviewText: {},
   reviewDate: {
-    color: '#9ca3af',
     textAlign: 'right',
   },
 });

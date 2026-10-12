@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React, {useEffect, useState} from 'react';
 import {Alert, FlatList, StyleSheet, View} from 'react-native';
 import {Button, IconButton, Text} from 'react-native-paper';
@@ -17,6 +18,7 @@ import type {MainTabNavigation} from '@/navigation/types';
 import {formatCurrency} from '@/utils/currency';
 
 export const WishlistScreen: React.FC = () => {
+  const {colors} = useTheme();
   const navigation = useNavigation<MainTabNavigation>();
   const session = useAppSelector(state => state.session);
   const wishlist = useAppSelector(state => state.wishlist.items);
@@ -81,10 +83,7 @@ export const WishlistScreen: React.FC = () => {
         productId,
       }).unwrap();
     } catch (mutationError) {
-      Alert.alert(
-        t('common.errors.genericTitle'),
-        t('wishlist.errors.remove'),
-      );
+      Alert.alert(t('common.errors.genericTitle'), t('wishlist.errors.remove'));
       console.warn('removeFromWishlist failed', mutationError);
     }
   };
@@ -115,10 +114,12 @@ export const WishlistScreen: React.FC = () => {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         renderItem={({item}) => (
-          <View style={styles.item}>
+          <View style={[styles.item, {backgroundColor: colors.surfaceVariant}]}>
             <View style={styles.itemInfo}>
               <Text variant="titleMedium">{item.name}</Text>
-              <Text variant="bodyMedium" style={styles.muted}>
+              <Text
+                variant="bodyMedium"
+                style={[styles.muted, {color: colors.onSurfaceVariant}]}>
                 {item.description}
               </Text>
               <Text variant="bodyMedium" style={styles.price}>
@@ -143,12 +144,16 @@ export const WishlistScreen: React.FC = () => {
         ListEmptyComponent={() => (
           <View style={styles.emptyState}>
             <Text variant="titleMedium">{t('wishlist.emptyTitle')}</Text>
-            <Text variant="bodyMedium" style={styles.muted}>
+            <Text
+              variant="bodyMedium"
+              style={[styles.muted, {color: colors.onSurfaceVariant}]}>
               {t('wishlist.emptySubtitle')}
             </Text>
             <Button
               mode="contained"
-              onPress={() => navigation.navigate('HomeStack', {screen: 'Home'})}>
+              onPress={() =>
+                navigation.navigate('HomeStack', {screen: 'Home'})
+              }>
               {t('common.actions.viewProducts')}
             </Button>
           </View>
@@ -169,7 +174,6 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 16,
     borderRadius: 16,
-    backgroundColor: '#f9fafc',
   },
   itemInfo: {
     flex: 1,
@@ -180,9 +184,7 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: 'center',
   },
-  muted: {
-    color: '#6b7280',
-  },
+  muted: {},
   price: {
     fontWeight: '600',
   },

@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React, {useEffect} from 'react';
 import {Alert, FlatList, StyleSheet, View} from 'react-native';
 import {Button, IconButton, Text} from 'react-native-paper';
@@ -22,6 +23,7 @@ import type {
 import {formatCurrency} from '@/utils/currency';
 
 export const CartScreen: React.FC = () => {
+  const {colors} = useTheme();
   const navigation = useNavigation<CartStackNavigation>();
   const tabNavigation = navigation.getParent<MainTabNavigation>();
   const drawerNavigation = tabNavigation?.getParent<RootDrawerNavigation>();
@@ -85,10 +87,7 @@ export const CartScreen: React.FC = () => {
 
   if (error) {
     return (
-      <ErrorState
-        message={t('cart.errors.load')}
-        onRetry={() => refetch()}
-      />
+      <ErrorState message={t('cart.errors.load')} onRetry={() => refetch()} />
     );
   }
 
@@ -99,10 +98,7 @@ export const CartScreen: React.FC = () => {
         productId,
       }).unwrap();
     } catch (mutationError) {
-      Alert.alert(
-        t('common.errors.genericTitle'),
-        t('cart.errors.remove'),
-      );
+      Alert.alert(t('common.errors.genericTitle'), t('cart.errors.remove'));
       console.warn('removeFromCart failed', mutationError);
     }
   };
@@ -111,10 +107,7 @@ export const CartScreen: React.FC = () => {
     try {
       await clearCart({userId: session.user!.id}).unwrap();
     } catch (mutationError) {
-      Alert.alert(
-        t('common.errors.genericTitle'),
-        t('cart.errors.clear'),
-      );
+      Alert.alert(t('common.errors.genericTitle'), t('cart.errors.clear'));
       console.warn('clearCart failed', mutationError);
     }
   };
@@ -170,13 +163,15 @@ export const CartScreen: React.FC = () => {
         ListHeaderComponent={() => (
           <View style={styles.header}>
             <Text variant="headlineSmall">{t('cart.title')}</Text>
-            <Text variant="bodyMedium" style={styles.subheader}>
+            <Text
+              variant="bodyMedium"
+              style={[styles.subheader, {color: colors.onSurfaceVariant}]}>
               {t('cart.subtitle', {count: cart.items.length})}
             </Text>
           </View>
         )}
         renderItem={({item}) => (
-          <View style={styles.item}>
+          <View style={[styles.item, {backgroundColor: colors.surfaceVariant}]}>
             <View style={styles.itemInfo}>
               <Text variant="titleMedium">{item.product.name}</Text>
               <View style={styles.quantityControls}>
@@ -218,7 +213,9 @@ export const CartScreen: React.FC = () => {
         ListEmptyComponent={() => (
           <View style={styles.emptyState}>
             <Text variant="titleMedium">{t('cart.emptyTitle')}</Text>
-            <Text variant="bodyMedium" style={styles.muted}>
+            <Text
+              variant="bodyMedium"
+              style={[styles.muted, {color: colors.onSurfaceVariant}]}>
               {t('cart.emptySubtitle')}
             </Text>
             <Button
@@ -237,7 +234,7 @@ export const CartScreen: React.FC = () => {
             </Button>
           </View>
         )}
-        ListFooterComponent={() => (
+        ListFooterComponent={() =>
           cart.items.length ? (
             <View style={styles.footer}>
               <View style={styles.summaryRow}>
@@ -254,7 +251,7 @@ export const CartScreen: React.FC = () => {
               </Button>
             </View>
           ) : null
-        )}
+        }
       />
     </Screen>
   );
@@ -268,16 +265,13 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 8,
   },
-  subheader: {
-    color: '#6b7280',
-  },
+  subheader: {},
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
     borderRadius: 16,
-    backgroundColor: '#f9fafc',
     gap: 12,
   },
   itemInfo: {
@@ -296,9 +290,7 @@ const styles = StyleSheet.create({
   price: {
     fontWeight: '600',
   },
-  muted: {
-    color: '#6b7280',
-  },
+  muted: {},
   emptyState: {
     alignItems: 'center',
     gap: 12,

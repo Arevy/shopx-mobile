@@ -9,10 +9,19 @@ export const fr = {
   ...en,
   common: {
     ...en.common,
+    vatIncluded: 'TVA incluse',
+    actions: {...en.common.actions, loadMore: 'Afficher plus'},
     language: {
       ...en.common.language,
       options: Common.language.options,
     },
+  },
+  home: {
+    ...en.home,
+    title: 'Le quotidien, repensé.',
+    eyebrow: 'Tech, maison et lifestyle',
+    intro:
+      'Découvrez des technologies utiles, des essentiels pour la maison et les petits détails qui améliorent le quotidien.',
   },
   Common,
   Page_Account: PageAccount,

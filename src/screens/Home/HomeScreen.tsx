@@ -1,6 +1,14 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Alert, FlatList, RefreshControl, StyleSheet, View} from 'react-native';
-import {Chip, Searchbar, Text} from 'react-native-paper';
+import {
+  Alert,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import {Button, Chip, Searchbar, Text, useTheme} from 'react-native-paper';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import type {RouteProp} from '@react-navigation/native';
 import {useAppTranslation} from '@/hooks/useAppTranslation';
@@ -19,9 +27,12 @@ import {
 import {useAppSelector} from '@/store/hooks';
 import {useDebouncedValue} from '@/hooks/useDebouncedValue';
 import type {HomeStackNavigation, HomeStackParamList} from '@/navigation/types';
-import type {Product} from '@/types/product';
 
 export const HomeScreen: React.FC = () => {
+  const {width} = useWindowDimensions();
+  const {colors} = useTheme();
+  const columns = width >= 1100 ? 4 : width >= 760 ? 3 : width < 360 ? 1 : 2;
+  const [limit, setLimit] = useState(24);
   const navigation = useNavigation<HomeStackNavigation>();
   const route = useRoute<RouteProp<HomeStackParamList, 'Home'>>();
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,7 +62,7 @@ export const HomeScreen: React.FC = () => {
     refetch,
   } = useGetProductsQuery(
     {
-      limit: 40,
+      limit,
       categoryId,
       name: debouncedSearch.length > 0 ? debouncedSearch : undefined,
     },
@@ -79,6 +90,7 @@ export const HomeScreen: React.FC = () => {
 
   const handleSelectCategory = (id?: string) => {
     const nextCategoryId = categoryId === id ? undefined : id;
+    setLimit(24);
     setCategoryId(nextCategoryId);
     navigation.setParams({categoryId: nextCategoryId});
   };
@@ -154,33 +166,46 @@ export const HomeScreen: React.FC = () => {
   }
 
   return (
-    <Screen>
+    <Screen edges={['left', 'right']}>
       <FlatList
+        key={columns}
         data={productList}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
-        numColumns={2}
-        columnWrapperStyle={styles.column}
+        numColumns={columns}
+        columnWrapperStyle={columns > 1 ? styles.column : undefined}
         refreshControl={
           <RefreshControl
             refreshing={isFetching && !isLoading}
             onRefresh={refetch}
           />
         }
-        ListHeaderComponent={() => (
+        ListHeaderComponent={
           <View style={styles.header}>
-            <Text variant="headlineSmall" style={styles.headline}>
+            <Text style={[styles.eyebrow, {color: colors.primary}]}>
+              {t('home.eyebrow')}
+            </Text>
+            <Text variant="headlineLarge" style={styles.headline}>
               {t('home.title')}
+            </Text>
+            <Text style={[styles.intro, {color: colors.onSurfaceVariant}]}>
+              {t('home.intro')}
             </Text>
             <Searchbar
               value={searchTerm}
-              onChangeText={setSearchTerm}
+              onChangeText={value => {
+                setSearchTerm(value);
+                setLimit(24);
+              }}
               placeholder={t('home.searchPlaceholder')}
               autoCorrect={false}
               style={styles.searchBar}
             />
             {categories?.length ? (
-              <View style={styles.chipContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipContainer}>
                 <Chip
                   selected={!categoryId}
                   onPress={() => handleSelectCategory(undefined)}>
@@ -194,12 +219,12 @@ export const HomeScreen: React.FC = () => {
                     {category.name}
                   </Chip>
                 ))}
-              </View>
+              </ScrollView>
             ) : null}
           </View>
-        )}
+        }
         renderItem={({item}) => (
-          <View style={styles.cardWrapper}>
+          <View style={[styles.cardWrapper, {flex: 1 / columns}]}>
             <ProductCard
               product={item}
               categoryName={
@@ -217,6 +242,17 @@ export const HomeScreen: React.FC = () => {
             />
           </View>
         )}
+        ListFooterComponent={
+          productList.length >= limit ? (
+            <Button
+              mode="outlined"
+              loading={isFetching}
+              disabled={isFetching}
+              onPress={() => setLimit(value => value + 24)}>
+              {t('common.actions.loadMore')}
+            </Button>
+          ) : null
+        }
         ListEmptyComponent={() => (
           <View style={styles.emptyState}>
             <Text variant="titleMedium">{t('home.emptyTitle')}</Text>
@@ -233,6 +269,10 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
+    paddingTop: 24,
+    width: '100%',
+    maxWidth: 1320,
+    alignSelf: 'center',
     paddingBottom: 32,
     gap: 16,
   },
@@ -247,7 +287,17 @@ const styles = StyleSheet.create({
     gap: 16,
     marginBottom: 16,
   },
+  eyebrow: {
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  intro: {fontSize: 15, lineHeight: 24, maxWidth: 640},
   headline: {
+    fontSize: 36,
+    lineHeight: 40,
+    letterSpacing: -1.3,
     fontWeight: '700',
   },
   searchBar: {
@@ -255,7 +305,6 @@ const styles = StyleSheet.create({
   },
   chipContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
   },
   emptyState: {
@@ -264,7 +313,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptySubtext: {
-    color: '#6b7280',
     textAlign: 'center',
   },
 });

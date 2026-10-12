@@ -13,7 +13,7 @@ export type UIState = {
 };
 
 const initialState: UIState = {
-  theme: 'system',
+  theme: 'dark',
   language: i18n.language as SupportedLanguage,
   hasCompletedOnboarding: false,
 };

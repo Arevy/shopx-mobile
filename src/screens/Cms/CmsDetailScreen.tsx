@@ -1,3 +1,4 @@
+import {useTheme} from 'react-native-paper';
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Button, Text} from 'react-native-paper';
@@ -14,11 +15,17 @@ import type {CmsStackParamList} from '@/navigation/types';
 type CmsDetailRoute = RouteProp<CmsStackParamList, 'CmsDetail'>;
 
 export const CmsDetailScreen: React.FC = () => {
+  const {colors} = useTheme();
   const navigation = useNavigation();
   const route = useRoute<CmsDetailRoute>();
   const {t, i18n} = useAppTranslation(['cms', 'common']);
 
-  const {data: page, isLoading, error, refetch} = useGetCmsPageQuery({
+  const {
+    data: page,
+    isLoading,
+    error,
+    refetch,
+  } = useGetCmsPageQuery({
     slug: route.params.slug,
   });
 
@@ -28,10 +35,7 @@ export const CmsDetailScreen: React.FC = () => {
 
   if (error || !page) {
     return (
-      <ErrorState
-        message={t('cms.pageError')}
-        onRetry={() => refetch()}
-      />
+      <ErrorState message={t('cms.pageError')} onRetry={() => refetch()} />
     );
   }
 
@@ -41,17 +45,16 @@ export const CmsDetailScreen: React.FC = () => {
 
   return (
     <Screen scrollable contentContainerStyle={styles.container}>
-      <Button
-        mode="text"
-        icon="arrow-left"
-        onPress={() => navigation.goBack()}>
+      <Button mode="text" icon="arrow-left" onPress={() => navigation.goBack()}>
         {t('common.actions.goBack')}
       </Button>
       <Text variant="headlineSmall" style={styles.title}>
         {page.title}
       </Text>
       {updatedAt ? (
-        <Text variant="bodySmall" style={styles.meta}>
+        <Text
+          variant="bodySmall"
+          style={[styles.meta, {color: colors.onSurfaceVariant}]}>
           {t('cms.updatedAt', {value: updatedAt})}
         </Text>
       ) : null}
@@ -72,9 +75,7 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: '700',
   },
-  meta: {
-    color: '#6b7280',
-  },
+  meta: {},
   body: {
     lineHeight: 22,
   },

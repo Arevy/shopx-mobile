@@ -5,9 +5,11 @@ import PageHome from '../resources/en/Page_Home.json';
 
 export const en = {
   common: {
+    vatIncluded: 'VAT included',
     appName: '{{siteName}} Mobile',
     description: 'The full ShopX commerce experience on the go.',
     actions: {
+      loadMore: 'Load more',
       retry: 'Retry',
       viewProducts: 'Browse products',
       goBack: 'Go back',
@@ -79,7 +81,10 @@ export const en = {
     },
   },
   home: {
-    title: 'Discover {{siteName}} products',
+    eyebrow: 'Tech, home & lifestyle',
+    intro:
+      'Discover useful technology, considered home essentials and the little things that make every day better.',
+    title: 'Everyday, upgraded.',
     searchPlaceholder: 'Search products, brands or categories',
     categoriesAll: 'All',
     emptyTitle: 'No results found',
@@ -160,8 +165,7 @@ export const en = {
     greeting: 'Hello, {{name}}',
     role: 'Role: {{role}}',
     anonymousTitle: 'Welcome to {{siteName}} Mobile',
-    anonymousSubtitle:
-      'Sign in to synchronise your experience across devices.',
+    anonymousSubtitle: 'Sign in to synchronise your experience across devices.',
     theme: 'Theme preferences',
     themeOptions: {
       system: 'System',
